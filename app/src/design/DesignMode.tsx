@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { DimensionsPanel } from './DimensionsPanel';
 import { EnginesPanel } from './EnginesPanel';
 import { RocketViewer } from './RocketViewer';
+import { MetricsReadout } from './MetricsReadout';
 
 type PanelTab = 'geometry' | 'engines' | 'materials';
 
@@ -10,8 +11,13 @@ export function DesignMode() {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-4 p-4 h-full">
-      <section className="rounded-lg border border-nasa/15 bg-white shadow-sm grid place-items-center min-h-[400px] bg-blueprint bg-grid">
-        <RocketViewer />
+      <section className="rounded-lg border border-nasa/15 bg-white shadow-sm flex flex-col min-h-[400px]">
+        <div className="flex-1 grid place-items-center bg-blueprint bg-grid rounded-t-lg overflow-hidden">
+          <RocketViewer />
+        </div>
+        <div className="border-t border-nasa/15 px-4 py-3">
+          <MetricsReadout />
+        </div>
       </section>
       <aside className="rounded-lg border border-nasa/15 bg-white shadow-sm p-4 space-y-3 overflow-y-auto">
         <div className="inline-flex rounded-full border border-nasa/15 p-0.5 bg-paper">
