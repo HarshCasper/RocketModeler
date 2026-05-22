@@ -1,21 +1,28 @@
 import { useMemo } from 'react';
 import { useAppStore } from '../state/store';
 import { computeStageCg } from '../physics/cg';
+import { computeCpForRocket } from '../physics/cp-barrowman';
 import { cm, grams } from '../ui/format';
+import { StabilityGauge } from './StabilityGauge';
 
 export function MetricsReadout() {
   const rocket = useAppStore((s) => s.rocket);
   const stagesShowing = useAppStore((s) => s.stagesShowing);
 
-  const { cg, totalMassG } = useMemo(
-    () => computeStageCg(rocket, stagesShowing),
-    [rocket, stagesShowing],
-  );
+  const { cg, totalMassG, cp } = useMemo(() => {
+    const cgRes = computeStageCg(rocket, stagesShowing);
+    const cpRes = computeCpForRocket(rocket);
+    return { cg: cgRes.cg, totalMassG: cgRes.totalMassG, cp: cpRes.cp };
+  }, [rocket, stagesShowing]);
 
   return (
-    <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
-      <Metric label="CG" value={cm(cg)} />
-      <Metric label="Mass" value={grams(totalMassG)} />
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+        <Metric label="CG" value={cm(cg)} />
+        <Metric label="CP" value={cm(cp)} />
+        <Metric label="Mass" value={grams(totalMassG)} />
+      </div>
+      <StabilityGauge />
     </div>
   );
 }
