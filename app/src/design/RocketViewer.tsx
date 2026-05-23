@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useAppStore } from '../state/store';
 import { computeStageCg } from '../physics/cg';
 import { computeCpForRocket } from '../physics/cp-barrowman';
+import { getEngine } from '../domain/engines';
 
 // SVG renders the rocket side-on. Internal "world" is in cm; we map to SVG
 // units with a scale factor and let the SVG viewBox handle responsiveness.
@@ -38,6 +39,17 @@ export function RocketViewer() {
 
   const cgY = BASELINE_Y - cg * PIXELS_PER_CM;
   const cpY = BASELINE_Y - cp * PIXELS_PER_CM;
+
+  // Stage separator lines — drawn between stages, from below.
+  const stageLines: number[] = [];
+  let cumulative = 0;
+  for (let i = 0; i < rocket.numStages - 1; i++) {
+    const id = rocket.engineIds[i];
+    if (!id) continue;
+    const eng = getEngine(id);
+    cumulative += eng.length / 10; // mm -> cm
+    stageLines.push(cumulative);
+  }
 
   return (
     <svg
@@ -85,6 +97,24 @@ export function RocketViewer() {
         stroke="#1A1A1A"
         strokeWidth={1}
       />
+
+      {/* stage separator lines */}
+      {stageLines.map((cmFromBase, i) => {
+        const y = BASELINE_Y - cmFromBase * PIXELS_PER_CM;
+        return (
+          <line
+            key={i}
+            x1={bodyLeft - finWidthPx - 4}
+            x2={bodyRight + finWidthPx + 4}
+            y1={y}
+            y2={y}
+            stroke="#9400D3"
+            strokeOpacity={0.6}
+            strokeWidth={1.2}
+            strokeDasharray="4 3"
+          />
+        );
+      })}
 
       {/* CG marker — yin-yang style circle (alternating quadrants) */}
       <g transform={`translate(${centerX}, ${cgY})`}>
