@@ -4,6 +4,7 @@ import { computeStageCg } from '../physics/cg';
 import { computeCpForRocket } from '../physics/cp-barrowman';
 import { cm, grams } from '../ui/format';
 import { StabilityGauge } from './StabilityGauge';
+import { StageInspector } from './StageInspector';
 
 export function MetricsReadout() {
   const rocket = useAppStore((s) => s.rocket);
@@ -17,6 +18,7 @@ export function MetricsReadout() {
 
   return (
     <div className="space-y-3">
+      <StageInspector />
       <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
         <Metric label="CG" value={cm(cg)} />
         <Metric label="CP" value={cm(cp)} />
