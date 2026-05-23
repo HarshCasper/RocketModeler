@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useAppStore } from '../state/store';
 import { computeStageCg } from '../physics/cg';
+import { computeCpForRocket } from '../physics/cp-barrowman';
 
 // SVG renders the rocket side-on. Internal "world" is in cm; we map to SVG
 // units with a scale factor and let the SVG viewBox handle responsiveness.
@@ -14,6 +15,7 @@ export function RocketViewer() {
   const stagesShowing = useAppStore((s) => s.stagesShowing);
 
   const { cg } = useMemo(() => computeStageCg(rocket, stagesShowing), [rocket, stagesShowing]);
+  const { cp } = useMemo(() => computeCpForRocket(rocket), [rocket]);
 
   const bodyLengthPx = rocket.body.length * PIXELS_PER_CM;
   const bodyWidthPx = rocket.body.diameter * PIXELS_PER_CM;
@@ -35,6 +37,7 @@ export function RocketViewer() {
   const rightFin = `${bodyRight},${finBottomY} ${bodyRight + finWidthPx},${finBottomY} ${bodyRight},${finTopY}`;
 
   const cgY = BASELINE_Y - cg * PIXELS_PER_CM;
+  const cpY = BASELINE_Y - cp * PIXELS_PER_CM;
 
   return (
     <svg
@@ -83,16 +86,38 @@ export function RocketViewer() {
         strokeWidth={1}
       />
 
-      {/* CG marker — yin-yang style circle */}
+      {/* CG marker — yin-yang style circle (alternating quadrants) */}
       <g transform={`translate(${centerX}, ${cgY})`}>
         <circle r={9} fill="white" stroke="#0B1320" strokeWidth={1.2} />
-        <path
-          d="M -9,0 A 9 9 0 0 1 9,0 L 0,0 A 0 0 0 0 0 0,0 Z"
-          fill="#0B1320"
-        />
-        <path d="M -9 0 A 9 9 0 0 0 0 0 L 0 0 Z" fill="#0B1320" />
-        <path d="M 0 0 A 9 9 0 0 1 9 0 L 0 0 Z" fill="#0B1320" />
+        <path d="M 0,-9 A 9 9 0 0 1 0,9 L 0,0 Z" fill="#0B1320" />
+        <path d="M 0,9 A 9 9 0 0 1 0,-9 L 0,0 Z" fill="white" />
+        <path d="M -9,0 A 9 9 0 0 1 0,-9 L 0,0 Z" fill="#0B1320" />
+        <path d="M 9,0 A 9 9 0 0 1 0,9 L 0,0 Z" fill="#0B1320" />
       </g>
+      <text
+        x={centerX + 14}
+        y={cgY + 4}
+        fontSize={10}
+        fontFamily="JetBrains Mono, ui-monospace, monospace"
+        fill="#0B1320"
+      >
+        CG
+      </text>
+
+      {/* CP marker — small filled dot inside outlined circle */}
+      <g transform={`translate(${centerX}, ${cpY})`}>
+        <circle r={9} fill="white" stroke="#0B3D91" strokeWidth={1.2} />
+        <circle r={3} fill="#0B3D91" />
+      </g>
+      <text
+        x={centerX + 14}
+        y={cpY + 4}
+        fontSize={10}
+        fontFamily="JetBrains Mono, ui-monospace, monospace"
+        fill="#0B3D91"
+      >
+        CP
+      </text>
     </svg>
   );
 }
