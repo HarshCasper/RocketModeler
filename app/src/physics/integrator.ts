@@ -102,8 +102,9 @@ function dragArea(rocket: Rocket, underChute: boolean): number {
     const r = rocket.parachuteDiameter / 2;
     return Math.PI * r * r;
   }
-  const rough = rocket.body.diameter / 100; // cm to m
-  return Math.PI * rough * rough;
+  // Body diameter is cm; we want radius in m, so divide by 200.
+  const radiusM = rocket.body.diameter / 200;
+  return Math.PI * radiusM * radiusM;
 }
 
 export function stepSim(sim: FlightSim): FlightSample {
