@@ -199,6 +199,37 @@ function drawRocket(
   ctx.closePath();
   ctx.fill();
 
+  // Exhaust flame + sparks during boost.
+  if (sample?.phase === 'boost') {
+    const baseY = bodyLen / 2;
+    const flicker = 0.6 + Math.random() * 0.4;
+    const flameLen = (10 + Math.random() * 6) * flicker;
+    const flameW = bodyW * 0.6;
+    // outer flame (orange)
+    ctx.fillStyle = 'rgba(214,51,51,0.9)';
+    ctx.beginPath();
+    ctx.moveTo(-flameW / 2, baseY);
+    ctx.quadraticCurveTo(0, baseY + flameLen * 0.6, flameW / 2, baseY);
+    ctx.lineTo(0, baseY + flameLen);
+    ctx.closePath();
+    ctx.fill();
+    // inner flame (yellow)
+    ctx.fillStyle = 'rgba(255,204,40,0.95)';
+    ctx.beginPath();
+    ctx.moveTo(-flameW / 4, baseY);
+    ctx.lineTo(0, baseY + flameLen * 0.75);
+    ctx.lineTo(flameW / 4, baseY);
+    ctx.closePath();
+    ctx.fill();
+    // sparks
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    for (let i = 0; i < 4; i++) {
+      const sx = (Math.random() - 0.5) * flameW;
+      const sy = baseY + Math.random() * flameLen * 1.2;
+      ctx.fillRect(sx, sy, 1.5, 1.5);
+    }
+  }
+
   // Parachute during descent.
   if (sample?.phase === 'descent') {
     const chuteR = rocket.parachuteDiameter * 100 * PX_PER_CM * 0.6;
