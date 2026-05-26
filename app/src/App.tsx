@@ -1,10 +1,14 @@
+import { useState } from 'react';
 import { useAppStore } from './state/store';
 import { DesignMode } from './design/DesignMode';
 import { FlightMode } from './flight/FlightMode';
+import { useUrlSync, copyShareLink } from './url/useUrlSync';
 
 export default function App() {
+  useUrlSync();
   const mode = useAppStore((s) => s.mode);
   const setMode = useAppStore((s) => s.setMode);
+  const [copied, setCopied] = useState(false);
 
   return (
     <div className="min-h-screen flex flex-col bg-paper text-ink">
@@ -39,9 +43,19 @@ export default function App() {
             Launch ▸
           </button>
         </nav>
-        <div className="ml-auto text-xs text-ink/50 hidden md:block">
-          inspired by NASA Glenn's RocketModeler
-        </div>
+        <button
+          type="button"
+          onClick={async () => {
+            const ok = await copyShareLink();
+            if (ok) {
+              setCopied(true);
+              setTimeout(() => setCopied(false), 1800);
+            }
+          }}
+          className="ml-auto text-xs text-nasa border border-nasa/20 rounded-full px-3 py-1 hover:bg-nasa/10 transition-colors"
+        >
+          {copied ? '✓ Link copied' : 'Copy share link'}
+        </button>
       </header>
       <main className="flex-1 min-h-0">
         {mode === 'design' ? <DesignMode /> : <FlightMode />}
