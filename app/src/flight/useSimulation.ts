@@ -12,6 +12,7 @@ interface UseSimulationArgs {
 
 export interface SimulationHandle {
   sample: FlightSample | null;
+  samples: FlightSample[]; // recorded trace, for post-flight charts
   runState: RunState;
   countdown: number; // 3, 2, 1, 0
   maxAlt: number;
@@ -27,6 +28,8 @@ export function useSimulation({ rocket, config }: UseSimulationArgs): Simulation
   const lastTickRef = useRef<number>(0);
   const accumulatedRef = useRef<number>(0);
   const [sample, setSample] = useState<FlightSample | null>(null);
+  const samplesRef = useRef<FlightSample[]>([]);
+  const [samplesSnapshot, setSamplesSnapshot] = useState<FlightSample[]>([]);
   const [runState, setRunState] = useState<RunState>('idle');
   const [countdown, setCountdown] = useState(0);
   const [maxAlt, setMaxAlt] = useState(0);
@@ -61,6 +64,7 @@ export function useSimulation({ rocket, config }: UseSimulationArgs): Simulation
       let next: FlightSample | null = null;
       while (accumulatedRef.current >= FLIGHT_DELTA_T) {
         next = stepSim(sim);
+        samplesRef.current.push(next);
         accumulatedRef.current -= FLIGHT_DELTA_T;
         if (next.altitude > maxAlt) setMaxAlt(next.altitude);
         if (next.phase === 'landed' || next.phase === 'crashed') {
@@ -71,6 +75,7 @@ export function useSimulation({ rocket, config }: UseSimulationArgs): Simulation
         setSample(next);
         if (next.phase === 'landed' || next.phase === 'crashed') {
           setRunState('ended');
+          setSamplesSnapshot(samplesRef.current.slice());
           stop();
           return;
         }
@@ -85,6 +90,8 @@ export function useSimulation({ rocket, config }: UseSimulationArgs): Simulation
     simRef.current = createSim(rocket, config);
     setSample(null);
     setMaxAlt(0);
+    samplesRef.current = [];
+    setSamplesSnapshot([]);
     accumulatedRef.current = 0;
     setRunState('countdown');
     setCountdown(3);
@@ -126,6 +133,8 @@ export function useSimulation({ rocket, config }: UseSimulationArgs): Simulation
     setMaxAlt(0);
     setCountdown(0);
     setRunState('idle');
+    samplesRef.current = [];
+    setSamplesSnapshot([]);
     accumulatedRef.current = 0;
   }, [rocket, config, stop]);
 
@@ -133,6 +142,7 @@ export function useSimulation({ rocket, config }: UseSimulationArgs): Simulation
 
   return {
     sample,
+    samples: samplesSnapshot,
     runState,
     countdown,
     maxAlt,
