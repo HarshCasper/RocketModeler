@@ -100,13 +100,13 @@ export function DimensionsPanel() {
       <div className="pt-2 space-y-2">
         <div className="text-xs font-medium text-ink/70">Stages</div>
         <div className="inline-flex rounded-full border border-nasa/20 p-0.5 bg-paper">
-          {[1, 2, 3].map((n) => (
+          {([1, 2, 3] as const).map((n) => (
             <button
               key={n}
               type="button"
               onClick={() =>
                 updateRocket((r) => {
-                  const next = { ...r, numStages: n as 1 | 2 | 3 };
+                  const next = { ...r, numStages: n };
                   // Ensure we have enough engine slots (booster engines for lower stages).
                   const ids = r.engineIds.slice() as [string, string?, string?];
                   while (ids.length < n) ids.push('B6-0');
