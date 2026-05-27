@@ -92,9 +92,12 @@ function currentMass(sim: FlightSim): number {
   const engine = sim.engines[stageIdx];
   if (!engine) return dry / 1000;
   const elapsed = s.t - s.stageStartT;
-  // Fuel burns linearly through totalBurnTime.
-  const fuelLeft = engine.fuelMass * (1 - elapsed / engine.totalBurnTime);
-  return (dry - engine.fuelMass + fuelLeft) / 1000; // kg
+  let burnFraction = elapsed / engine.totalBurnTime;
+  if (burnFraction < 0) burnFraction = 0;
+  if (burnFraction > 1) burnFraction = 1;
+  const fuelLeft = engine.fuelMass * (1 - burnFraction);
+  const grams = dry - engine.fuelMass + fuelLeft;
+  return grams / 1000; // kg
 }
 
 function dragArea(rocket: Rocket, underChute: boolean): number {

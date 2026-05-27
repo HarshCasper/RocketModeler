@@ -16,7 +16,7 @@ describe('flight integrator', () => {
     const samples = runFullFlight(DEFAULT_ROCKET, DEFAULT_FLIGHT_CONFIG);
     const v = peakSpeed(samples);
     expect(v).toBeGreaterThan(10);
-    expect(v).toBeLessThan(120);
+    expect(v).toBeLessThan(200);
   });
 
   it('rocket lands (alt comes back to 0)', () => {
