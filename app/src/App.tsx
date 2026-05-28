@@ -116,11 +116,13 @@ function SoundToggle() {
     <button
       type="button"
       onClick={() => updateFlight((f) => ({ ...f, soundEnabled: !f.soundEnabled }))}
-      className="text-xs border border-nasa/20 rounded-full px-2.5 py-1 hover:bg-nasa/10 transition-colors"
-      title={enabled ? 'Sound on' : 'Sound off'}
+      className="inline-flex items-center gap-1 text-xs border border-nasa/20 rounded-full px-2.5 py-1 hover:bg-nasa/10 transition-colors"
+      title={enabled ? 'Sound on — click to mute' : 'Sound off — click to enable'}
+      aria-label={enabled ? 'Mute sound' : 'Enable sound'}
       aria-pressed={enabled}
     >
-      {enabled ? '🔊' : '🔈'}
+      <span aria-hidden="true">{enabled ? '🔊' : '🔈'}</span>
+      <span className="sr-only">{enabled ? 'Sound on' : 'Sound off'}</span>
     </button>
   );
 }
