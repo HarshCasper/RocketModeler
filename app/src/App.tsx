@@ -1,9 +1,15 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAppStore } from './state/store';
 import { DesignMode } from './design/DesignMode';
 import { FlightMode } from './flight/FlightMode';
 import { useUrlSync, copyShareLink } from './url/useUrlSync';
 import { AboutModal } from './ui/AboutModal';
+
+function isTypingTarget(el: EventTarget | null): boolean {
+  if (!(el instanceof HTMLElement)) return false;
+  const tag = el.tagName;
+  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || el.isContentEditable;
+}
 
 export default function App() {
   useUrlSync();
@@ -11,6 +17,27 @@ export default function App() {
   const setMode = useAppStore((s) => s.setMode);
   const [copied, setCopied] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (isTypingTarget(e.target)) return;
+      if (e.key === 'd' || e.key === 'D') {
+        e.preventDefault();
+        setMode('design');
+      } else if (e.key === 'l' || e.key === 'L') {
+        e.preventDefault();
+        setMode('flight');
+      } else if (e.key === '?') {
+        e.preventDefault();
+        setAboutOpen((v) => !v);
+      } else if (e.key === 'Escape') {
+        setAboutOpen(false);
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [setMode]);
 
   return (
     <div className="min-h-screen flex flex-col bg-paper text-ink">
