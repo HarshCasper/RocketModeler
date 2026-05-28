@@ -6,3 +6,14 @@
   font-family: 'Inter', system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif;
   color-scheme: light;
 }
+
+@keyframes fadeSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

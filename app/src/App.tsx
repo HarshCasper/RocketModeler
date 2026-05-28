@@ -4,6 +4,7 @@ import { DesignMode } from './design/DesignMode';
 import { FlightMode } from './flight/FlightMode';
 import { useUrlSync, copyShareLink } from './url/useUrlSync';
 import { AboutModal } from './ui/AboutModal';
+import { ToastHost, pushToast } from './ui/Toast';
 
 function isTypingTarget(el: EventTarget | null): boolean {
   if (!(el instanceof HTMLElement)) return false;
@@ -88,6 +89,9 @@ export default function App() {
               if (ok) {
                 setCopied(true);
                 setTimeout(() => setCopied(false), 1800);
+                pushToast('Share link copied to clipboard', 'success');
+              } else {
+                pushToast('Could not access clipboard', 'error');
               }
             }}
             className="text-xs text-nasa border border-nasa/20 rounded-full px-3 py-1 hover:bg-nasa/10 transition-colors"
@@ -100,6 +104,7 @@ export default function App() {
         {mode === 'design' ? <DesignMode /> : <FlightMode />}
       </main>
       <AboutModal open={aboutOpen} onClose={() => setAboutOpen(false)} />
+      <ToastHost />
     </div>
   );
 }
