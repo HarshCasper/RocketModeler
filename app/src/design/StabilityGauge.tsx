@@ -41,8 +41,18 @@ export function StabilityGauge() {
   }, [rocket, stagesShowing]);
 
   const verdict = verdictFor(caliber);
-  const clamped = Math.max(-1, Math.min(3, caliber));
-  const fillPercent = ((clamped + 1) / 4) * 100;
+  const rangeLo = Math.min(-1, Math.floor(caliber - 0.3));
+  const rangeHi = Math.max(3, Math.ceil(caliber + 0.3));
+  const span = rangeHi - rangeLo;
+  const fillPercent = ((caliber - rangeLo) / span) * 100;
+  const zoneStop = (v: number) => ((v - rangeLo) / span) * 100;
+  const stops = {
+    unstableEnd: zoneStop(0),
+    marginalEnd: zoneStop(1.0),
+    stableEnd: zoneStop(2.5),
+  };
+  const ticks: number[] = [];
+  for (let t = rangeLo; t <= rangeHi; t++) ticks.push(t);
 
   return (
     <div className="space-y-2">
@@ -66,27 +76,36 @@ export function StabilityGauge() {
         </span>
       </div>
       <div className="relative h-2 rounded-full bg-paper overflow-hidden border border-nasa/10">
-        {/* zone backdrop */}
         <div
-          className="absolute inset-0 flex"
+          className="absolute inset-0"
           style={{
-            background:
-              'linear-gradient(90deg, #C0392B 0%, #C0392B 25%, #E0A116 25%, #E0A116 50%, #2E8B57 50%, #2E8B57 87.5%, #E0A116 87.5%, #E0A116 100%)',
+            background: `linear-gradient(90deg,
+              #C0392B 0%,
+              #C0392B ${stops.unstableEnd}%,
+              #E0A116 ${stops.unstableEnd}%,
+              #E0A116 ${stops.marginalEnd}%,
+              #2E8B57 ${stops.marginalEnd}%,
+              #2E8B57 ${stops.stableEnd}%,
+              #E0A116 ${stops.stableEnd}%,
+              #E0A116 100%)`,
             opacity: 0.25,
           }}
         />
-        {/* needle */}
         <div
           className="absolute top-0 h-full w-[3px] bg-ink rounded-full transition-all"
           style={{ left: `calc(${fillPercent}% - 1.5px)` }}
         />
       </div>
-      <div className="flex justify-between text-[10px] text-ink/40 font-mono tabular-nums">
-        <span>−1</span>
-        <span>0</span>
-        <span>1</span>
-        <span>2</span>
-        <span>3</span>
+      <div className="relative h-3 text-[10px] text-ink/40 font-mono tabular-nums">
+        {ticks.map((t) => (
+          <span
+            key={t}
+            className="absolute -translate-x-1/2"
+            style={{ left: `${zoneStop(t)}%` }}
+          >
+            {t < 0 ? `−${Math.abs(t)}` : t}
+          </span>
+        ))}
       </div>
       <div className="flex justify-between text-xs">
         <span className="text-ink/60">
