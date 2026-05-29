@@ -35,13 +35,15 @@ export function useSimulation({ rocket, config }: UseSimulationArgs): Simulation
   const [countdown, setCountdown] = useState(0);
   const [maxAlt, setMaxAlt] = useState(0);
 
-  // Re-create sim whenever rocket or initial config changes while idle.
+  // Re-create sim whenever rocket or initial config changes while idle. After
+  // 'ended' we keep the final sample so the HUD still shows the landed stats
+  // until the user explicitly resets or relaunches.
   useEffect(() => {
-    if (runState === 'idle' || runState === 'ended') {
+    if (runState === 'idle') {
       simRef.current = createSim(rocket, config);
       setSample(null);
       setMaxAlt(0);
-    maxAltRef.current = 0;
+      maxAltRef.current = 0;
     }
   }, [rocket, config, runState]);
 
