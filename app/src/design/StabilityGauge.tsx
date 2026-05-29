@@ -5,10 +5,13 @@ import { computeCpForRocket } from '../physics/cp-barrowman';
 
 type Verdict = 'unstable' | 'marginal' | 'stable' | 'overstable';
 
+// Hobby-rocket rule of thumb: 1.0–2.5 caliber is the comfortable band. Below
+// 1.0 is twitchy and may tumble in gusts; above 2.5 the rocket weathercocks
+// into wind on the way up.
 function verdictFor(caliber: number): Verdict {
   if (caliber < 0) return 'unstable';
-  if (caliber < 0.5) return 'marginal';
-  if (caliber > 2) return 'overstable';
+  if (caliber < 1.0) return 'marginal';
+  if (caliber > 2.5) return 'overstable';
   return 'stable';
 }
 
@@ -68,7 +71,7 @@ export function StabilityGauge() {
           className="absolute inset-0 flex"
           style={{
             background:
-              'linear-gradient(90deg, #C0392B 0%, #C0392B 25%, #E0A116 25%, #E0A116 37.5%, #2E8B57 37.5%, #2E8B57 75%, #E0A116 75%, #E0A116 100%)',
+              'linear-gradient(90deg, #C0392B 0%, #C0392B 25%, #E0A116 25%, #E0A116 50%, #2E8B57 50%, #2E8B57 87.5%, #E0A116 87.5%, #E0A116 100%)',
             opacity: 0.25,
           }}
         />
