@@ -115,7 +115,7 @@ export function stepSim(sim: FlightSim): FlightSample {
   const rocket = sim.rocket;
 
   if (s.phase === 'landed' || s.phase === 'crashed') {
-    return toSample(sim, currentMass(sim), 0);
+    return toSample(sim, currentMass(sim), 0, 0);
   }
 
   // Tipoff: if at-ignition margin was negative, tip over progressively.
@@ -126,11 +126,13 @@ export function stepSim(sim: FlightSim): FlightSample {
 
   if (s.phase === 'pad') {
     // Hold until launch is triggered externally.
-    return toSample(sim, currentMass(sim), 0);
+    return toSample(sim, currentMass(sim), 0, 0);
   }
 
   const stepDt = FLIGHT_DELTA_T / SUB_STEPS_PER_FRAME;
   let appliedThrust = 0;
+  let lastAx = 0;
+  let lastAy = 0;
 
   for (let i = 0; i < SUB_STEPS_PER_FRAME; i++) {
     s.t += stepDt;
@@ -183,6 +185,8 @@ export function stepSim(sim: FlightSim): FlightSample {
 
     const ax = fx / mass;
     const ay = fy / mass;
+    lastAx = ax;
+    lastAy = ay;
 
     s.vx += ax * stepDt;
     s.vy += ay * stepDt;
@@ -201,7 +205,8 @@ export function stepSim(sim: FlightSim): FlightSample {
     if (s.altitude > s.maxAlt) s.maxAlt = s.altitude;
   }
 
-  return toSample(sim, currentMass(sim), appliedThrust);
+  const accelMag = Math.sqrt(lastAx * lastAx + lastAy * lastAy);
+  return toSample(sim, currentMass(sim), appliedThrust, accelMag);
 }
 
 export function ignite(sim: FlightSim) {
@@ -210,7 +215,12 @@ export function ignite(sim: FlightSim) {
   sim.state.stageStartT = sim.state.t;
 }
 
-function toSample(sim: FlightSim, mass: number, thrust: number): FlightSample {
+function toSample(
+  sim: FlightSim,
+  mass: number,
+  thrust: number,
+  acceleration: number,
+): FlightSample {
   const s = sim.state;
   return {
     t: s.t,
@@ -219,7 +229,7 @@ function toSample(sim: FlightSim, mass: number, thrust: number): FlightSample {
     vy: s.vy,
     vx: s.vx,
     speed: Math.sqrt(s.vx * s.vx + s.vy * s.vy),
-    acceleration: 0, // we don't track instantaneous acceleration directly yet
+    acceleration,
     mass: mass * 1000, // back to g for display
     thrust,
     phase: s.phase,
