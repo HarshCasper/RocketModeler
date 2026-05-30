@@ -1,5 +1,6 @@
 import type { FlightSample } from '../domain/types';
 import { FlightChart } from './FlightChart';
+import { GRAVITY } from '../domain/constants';
 
 interface PostFlightSummaryProps {
   samples: FlightSample[];
@@ -13,6 +14,7 @@ export function PostFlightSummary({ samples, onClose, onShare }: PostFlightSumma
   const last = samples[samples.length - 1];
   const maxAlt = samples.reduce((m, s) => Math.max(m, s.altitude), 0);
   const peakSpeed = samples.reduce((m, s) => Math.max(m, s.speed), 0);
+  const peakAccelG = samples.reduce((m, s) => Math.max(m, s.acceleration), 0) / GRAVITY;
   const tToApogee = (() => {
     let bestT = 0;
     let bestAlt = 0;
@@ -45,16 +47,25 @@ export function PostFlightSummary({ samples, onClose, onShare }: PostFlightSumma
           </button>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-sm">
           <Stat label="Max altitude" value={`${maxAlt.toFixed(1)} m`} highlight />
           <Stat label="Peak speed" value={`${peakSpeed.toFixed(1)} m/s`} />
+          <Stat label="Peak g" value={`${peakAccelG.toFixed(1)} g`} />
           <Stat label="Time to apogee" value={`${tToApogee.toFixed(1)} s`} />
           <Stat label="Total flight" value={`${totalTime.toFixed(1)} s`} />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <FlightChart samples={samples} field="altitude" label="Altitude" unit="m" color="#0B3D91" />
           <FlightChart samples={samples} field="speed" label="Speed" unit="m/s" color="#D63333" />
+          <FlightChart
+            samples={samples}
+            field="acceleration"
+            label="Accel"
+            unit="g"
+            color="#2E8B57"
+            divisor={GRAVITY}
+          />
         </div>
 
         <div className="flex justify-end gap-2 pt-2">

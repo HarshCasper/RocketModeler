@@ -3,23 +3,24 @@ import type { FlightSample } from '../domain/types';
 
 interface FlightChartProps {
   samples: FlightSample[];
-  field: 'altitude' | 'speed';
+  field: 'altitude' | 'speed' | 'acceleration';
   label: string;
   unit: string;
   color: string;
+  divisor?: number; // optional scale (e.g., gravity, to show acceleration in g)
 }
 
 const W = 260;
 const H = 80;
 const PAD = 16;
 
-export function FlightChart({ samples, field, label, unit, color }: FlightChartProps) {
+export function FlightChart({ samples, field, label, unit, color, divisor = 1 }: FlightChartProps) {
   const { path, minVal, maxVal, tMax } = useMemo(() => {
     if (samples.length === 0) {
       return { path: '', minVal: 0, maxVal: 0, tMax: 0 };
     }
     const ts = samples.map((s) => s.t);
-    const vs = samples.map((s) => s[field]);
+    const vs = samples.map((s) => s[field] / divisor);
     const tMaxLocal = Math.max(...ts);
     const lo = Math.min(...vs, 0);
     const hi = Math.max(...vs, 1);
@@ -27,8 +28,9 @@ export function FlightChart({ samples, field, label, unit, color }: FlightChartP
     const scaleX = (W - 2 * PAD) / (tMaxLocal || 1);
     const scaleY = (H - 2 * PAD) / span;
     const pts = samples.map((s) => {
+      const v = s[field] / divisor;
       const x = PAD + s.t * scaleX;
-      const y = H - PAD - (s[field] - lo) * scaleY;
+      const y = H - PAD - (v - lo) * scaleY;
       return `${x.toFixed(1)},${y.toFixed(1)}`;
     });
     return {
@@ -37,7 +39,7 @@ export function FlightChart({ samples, field, label, unit, color }: FlightChartP
       maxVal: hi,
       tMax: tMaxLocal,
     };
-  }, [samples, field]);
+  }, [samples, field, divisor]);
 
   if (samples.length === 0) return null;
 
@@ -52,13 +54,13 @@ export function FlightChart({ samples, field, label, unit, color }: FlightChartP
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-20">
         <rect x={0} y={0} width={W} height={H} fill="#F4F7FB" />
         <path d={path} stroke={color} strokeWidth={1.5} fill="none" />
-        <text x={PAD} y={H - 2} fontSize={9} fill="#0B132080">
+        <text x={2} y={H - 2} fontSize={9} fill="#0B132080">
           0 s
         </text>
-        <text x={W - PAD - 24} y={H - 2} fontSize={9} fill="#0B132080">
+        <text x={W - 36} y={H - 2} fontSize={9} fill="#0B132080">
           {tMax.toFixed(1)} s
         </text>
-        <text x={PAD} y={PAD - 4} fontSize={9} fill="#0B132080">
+        <text x={2} y={PAD - 4} fontSize={9} fill="#0B132080">
           {minVal.toFixed(1)} {unit}
         </text>
       </svg>
