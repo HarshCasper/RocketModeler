@@ -3,6 +3,34 @@ import { useAppStore } from '../state/store';
 import { computeStageCg } from '../physics/cg';
 import { computeCpForRocket } from '../physics/cp-barrowman';
 import { getEngine } from '../domain/engines';
+import type { NoseConeShape } from '../domain/types';
+
+export function noseConePath(
+  shape: NoseConeShape,
+  leftX: number,
+  rightX: number,
+  baseY: number,
+  tipY: number,
+): string {
+  const centerX = (leftX + rightX) / 2;
+  const noseLen = baseY - tipY;
+  const halfWidth = (rightX - leftX) / 2 || 0.0001;
+  switch (shape) {
+    case 'ogive': {
+      const rho = (halfWidth * halfWidth + noseLen * noseLen) / (2 * halfWidth);
+      return `M ${leftX} ${baseY} A ${rho} ${rho} 0 0 1 ${centerX} ${tipY} A ${rho} ${rho} 0 0 1 ${rightX} ${baseY} Z`;
+    }
+    case 'parabolic': {
+      const ctrlY = baseY - 2 * noseLen;
+      return `M ${leftX} ${baseY} Q ${centerX} ${ctrlY} ${rightX} ${baseY} Z`;
+    }
+    case 'elliptical':
+      return `M ${leftX} ${baseY} A ${halfWidth} ${noseLen} 0 0 1 ${rightX} ${baseY} Z`;
+    case 'cone':
+    default:
+      return `M ${leftX} ${baseY} L ${centerX} ${tipY} L ${rightX} ${baseY} Z`;
+  }
+}
 
 // SVG renders the rocket side-on. Internal "world" is in cm; we map to SVG
 // units with a scale factor and let the SVG viewBox handle responsiveness.
@@ -79,8 +107,14 @@ export function RocketViewer() {
         strokeWidth={1}
       />
       {/* nose cone */}
-      <polygon
-        points={`${bodyLeft},${bodyTopY} ${centerX},${noseTipY} ${bodyRight},${bodyTopY}`}
+      <path
+        d={noseConePath(
+          rocket.noseCone.shape ?? 'cone',
+          bodyLeft,
+          bodyRight,
+          bodyTopY,
+          noseTipY,
+        )}
         fill="#D63333"
         stroke="#1A1A1A"
         strokeWidth={1}
