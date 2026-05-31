@@ -1,13 +1,15 @@
 // Barrowman center-of-pressure calculation, simplified for a single-segment
-// body tube + cone nose + triangular fins (matching the applet's geometry).
+// body tube + axisymmetric nose + triangular fins (matching the applet's
+// geometry, extended for selectable nose cone shapes).
 // All inputs in cm; outputs in cm from the bottom of the rocket stack.
 
-import type { Rocket } from '../domain/types';
+import type { NoseConeShape, Rocket } from '../domain/types';
 
 export interface CpInputs {
   bodyLength: number; // cm
   bodyDiameter: number; // cm
   noseLength: number; // cm
+  noseShape?: NoseConeShape;
   finLength: number; // root chord, cm
   finWidth: number; // semi-span, cm
   finHeight: number; // axial offset from rocket base to fin trailing edge, cm
@@ -22,13 +24,29 @@ export interface CpResult {
   cnaFins: number;
 }
 
+// Published Barrowman X_n coefficients (CP location from nose tip, as a
+// fraction of nose length) for common axisymmetric nose shapes. All four
+// shapes share Cnα_n = 2 by Barrowman's slender-body approximation.
+const NOSE_CP_COEFF: Record<NoseConeShape, number> = {
+  cone: 2 / 3, // ~0.6667
+  ogive: 0.466, // tangent ogive
+  parabolic: 0.5, // half-power parabola
+  elliptical: 1 / 3, // ~0.3333
+};
+
+export function noseConeCpCoeff(shape: NoseConeShape | undefined): number {
+  return NOSE_CP_COEFF[shape ?? 'cone'];
+}
+
 export function computeCp(input: CpInputs): CpResult {
   const { bodyLength, bodyDiameter, noseLength, finLength, finWidth, finHeight, finCount } = input;
+  const noseShape = input.noseShape ?? 'cone';
   const totalLen = bodyLength + noseLength;
 
-  // Nose cone — right cone: Cnα = 2, CP at 2/3 of nose length from tip.
+  // Nose cone — all axisymmetric pointed shapes have Cnα = 2. CP from nose
+  // tip depends on shape per published Barrowman coefficients.
   const cnaNose = 2;
-  const xNose = (2 / 3) * noseLength;
+  const xNose = NOSE_CP_COEFF[noseShape] * noseLength;
 
   // Fins — triangular delta with apex at top: c_r = finLength, c_t = 0,
   // semi-span s = finWidth, sweep length m = finLength.
@@ -67,6 +85,7 @@ export function computeCpForRocket(rocket: Rocket): CpResult {
     bodyLength: rocket.body.length,
     bodyDiameter: rocket.body.diameter,
     noseLength: rocket.noseCone.length,
+    noseShape: rocket.noseCone.shape,
     finLength: rocket.fins.length,
     finWidth: rocket.fins.width,
     finHeight: rocket.fins.height,
