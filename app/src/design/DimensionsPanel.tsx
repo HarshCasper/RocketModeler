@@ -1,5 +1,13 @@
 import { useAppStore } from '../state/store';
 import { SliderField } from '../ui/SliderField';
+import type { NoseConeShape } from '../domain/types';
+
+const NOSE_SHAPES: { id: NoseConeShape; label: string }[] = [
+  { id: 'cone', label: 'Cone' },
+  { id: 'ogive', label: 'Ogive' },
+  { id: 'parabolic', label: 'Parabolic' },
+  { id: 'elliptical', label: 'Elliptical' },
+];
 
 export function DimensionsPanel() {
   const rocket = useAppStore((s) => s.rocket);
@@ -42,6 +50,35 @@ export function DimensionsPanel() {
           updateRocket((r) => ({ ...r, noseCone: { ...r.noseCone, length: v } }))
         }
       />
+
+      <div className="space-y-1">
+        <div className="text-xs font-medium text-ink/70">Nose cone shape</div>
+        <div className="flex flex-wrap gap-1.5">
+          {NOSE_SHAPES.map((s) => {
+            const active = (rocket.noseCone.shape ?? 'cone') === s.id;
+            return (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() =>
+                  updateRocket((r) => ({
+                    ...r,
+                    noseCone: { ...r.noseCone, shape: s.id },
+                  }))
+                }
+                className={
+                  'px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors border ' +
+                  (active
+                    ? 'bg-nasa text-white border-nasa'
+                    : 'text-ink/70 bg-paper border-nasa/15 hover:border-nasa/40')
+                }
+              >
+                {s.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
       <SliderField
         label="Fin length"
         value={rocket.fins.length}
