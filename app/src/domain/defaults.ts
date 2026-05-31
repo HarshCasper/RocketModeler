@@ -8,6 +8,7 @@ export const DEFAULT_ROCKET: Rocket = {
   noseCone: {
     length: 8.0,
     materialId: 'balsa',
+    shape: 'cone',
   },
   body: {
     length: 33.0,

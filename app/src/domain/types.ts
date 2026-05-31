@@ -28,10 +28,13 @@ export type StageCount = 1 | 2 | 3;
 export type ParachuteDiameter = 0.3 | 0.6 | 0.9; // meters
 export type FinThicknessIn = 0.125 | 0.25;
 
+export type NoseConeShape = 'cone' | 'ogive' | 'parabolic' | 'elliptical';
+
 export interface NoseCone {
   length: number; // cm
   materialId: MaterialId;
   customDensity?: number;
+  shape?: NoseConeShape;
 }
 
 export interface Body {
