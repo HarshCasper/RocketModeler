@@ -6,6 +6,7 @@ import { airDensity } from './atmosphere-isa';
 import {
   FLIGHT_DELTA_T,
   GRAVITY,
+  LAUNCH_ROD_LENGTH_CM,
   PARACHUTE_DRAG_COEFFICIENT,
   SUB_STEPS_PER_FRAME,
 } from '../domain/constants';
@@ -25,6 +26,7 @@ interface InternalState {
   phase: FlightPhase;
   maxAlt: number;
   unstable: boolean;
+  onRod: boolean; // true while the rocket is still constrained to the launch rod
 }
 
 export interface FlightSim {
@@ -74,6 +76,7 @@ export function createSim(rocket: Rocket, config: FlightConfig): FlightSim {
       phase: 'pad',
       maxAlt: 0,
       unstable: margin < 0,
+      onRod: true,
     },
   };
 }
@@ -118,8 +121,9 @@ export function stepSim(sim: FlightSim): FlightSample {
     return toSample(sim, currentMass(sim), 0, 0);
   }
 
-  // Tipoff: if at-ignition margin was negative, tip over progressively.
-  if (s.unstable && s.phase !== 'pad') {
+  // Tipoff: if at-ignition margin was negative, tip over progressively once
+  // the rocket has cleared the launch rod (the rod itself holds it straight).
+  if (s.unstable && s.phase !== 'pad' && !s.onRod) {
     s.tiltDeg -= 1;
     if (s.tiltDeg < 0) s.tiltDeg += 360;
   }
@@ -192,6 +196,27 @@ export function stepSim(sim: FlightSim): FlightSample {
     s.vy += ay * stepDt;
     s.xDist += s.vx * stepDt;
     s.altitude += s.vy * stepDt;
+
+    // Launch rod constraint: while the rocket has not yet cleared the rod
+    // length, project velocity and position back onto the rod axis so motion
+    // is purely axial. This mirrors how a real launch rod prevents off-axis
+    // motion until the rocket flies free.
+    if (s.onRod) {
+      const rodRad = (sim.config.launchAngle * Math.PI) / 180;
+      const cosR = Math.cos(rodRad);
+      const sinR = Math.sin(rodRad);
+      const vAxial = Math.max(0, s.vx * cosR + s.vy * sinR);
+      s.vx = vAxial * cosR;
+      s.vy = vAxial * sinR;
+      const rodDist = Math.sqrt(s.xDist * s.xDist + s.altitude * s.altitude);
+      if (rodDist >= LAUNCH_ROD_LENGTH_CM / 100) {
+        s.onRod = false;
+      } else {
+        // Keep position exactly on the rod axis.
+        s.xDist = rodDist * cosR;
+        s.altitude = rodDist * sinR;
+      }
+    }
 
     if (s.altitude < 0) {
       s.altitude = 0;
