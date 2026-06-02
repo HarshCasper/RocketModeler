@@ -12,15 +12,27 @@ interface FlightViewerProps {
 const CANVAS_W = 800;
 const CANVAS_H = 520;
 
+const TRAIL_MAX = 300; // points
+
 export function FlightViewer({ rocket, sample, launchAngle, countdown, windSpeed }: FlightViewerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const trailRef = useRef<{ x: number; altitude: number }[]>([]);
 
   useEffect(() => {
     const cnv = canvasRef.current;
     if (!cnv) return;
     const ctx = cnv.getContext('2d');
     if (!ctx) return;
-    draw(ctx, rocket, sample, launchAngle, countdown, windSpeed);
+    // Maintain trajectory trail. Reset on idle or freshly created sim.
+    if (!sample || sample.phase === 'pad') {
+      trailRef.current = [];
+    } else {
+      trailRef.current.push({ x: sample.xDistance, altitude: sample.altitude });
+      if (trailRef.current.length > TRAIL_MAX) {
+        trailRef.current.splice(0, trailRef.current.length - TRAIL_MAX);
+      }
+    }
+    draw(ctx, rocket, sample, launchAngle, countdown, windSpeed, trailRef.current);
   }, [rocket, sample, launchAngle, countdown, windSpeed]);
 
   return (
@@ -42,6 +54,7 @@ function draw(
   launchAngle: number,
   countdown: number,
   windSpeed: number,
+  trail: { x: number; altitude: number }[],
 ) {
   const W = ctx.canvas.width;
   const H = ctx.canvas.height;
@@ -67,7 +80,8 @@ function draw(
   const scale = altitude < 30 ? NEAR_SCALE : farScale;
 
   const rocketY = padBaselineY - altitude * scale;
-  const rocketX = W / 2;
+  const rocketX = W / 2 + (sample?.xDistance ?? 0) * scale;
+  const padOriginX = W / 2;
 
   // Ground band (only visible when rocket is near pad).
   const groundY = padBaselineY + Math.max(0, (altitude - 0) * 0); // ground stays fixed
@@ -83,10 +97,10 @@ function draw(
   }
   void groundY;
 
-  // Launch rod.
+  // Launch rod (rooted at the pad origin, not the moving rocket).
   const rodLengthPx = 60;
   const rodAngleRad = (launchAngle * Math.PI) / 180;
-  const rodBaseX = rocketX - 14;
+  const rodBaseX = padOriginX - 14;
   const rodBaseY = padBaselineY;
   const rodTipX = rodBaseX + rodLengthPx * Math.cos(rodAngleRad);
   const rodTipY = rodBaseY - rodLengthPx * Math.sin(rodAngleRad);
@@ -96,6 +110,21 @@ function draw(
   ctx.moveTo(rodBaseX, rodBaseY);
   ctx.lineTo(rodTipX, rodTipY);
   ctx.stroke();
+
+  // Trajectory trail.
+  if (trail.length > 1) {
+    ctx.strokeStyle = 'rgba(11,61,145,0.45)';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    for (let i = 0; i < trail.length; i++) {
+      const t = trail[i];
+      const tx = padOriginX + t.x * scale;
+      const ty = padBaselineY - t.altitude * scale;
+      if (i === 0) ctx.moveTo(tx, ty);
+      else ctx.lineTo(tx, ty);
+    }
+    ctx.stroke();
+  }
 
   // Rocket sprite.
   drawRocket(ctx, rocketX, rocketY, rocket, launchAngle, sample);
