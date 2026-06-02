@@ -149,14 +149,11 @@ function drawRocket(
   const finW = rocket.fins.width * PX_PER_CM;
   const finH = rocket.fins.height * PX_PER_CM;
 
-  // Tilt: on the pad we follow launch angle; once flying, derive a heading
-  // from velocity vector. 90° = straight up.
-  let tiltDeg = launchAngleDeg;
-  if (sample && (sample.phase === 'boost' || sample.phase === 'coast')) {
-    if (Math.abs(sample.vx) + Math.abs(sample.vy) > 0.1) {
-      tiltDeg = (Math.atan2(sample.vy, sample.vx) * 180) / Math.PI;
-    }
-  }
+  // Tilt: use the simulated heading from the integrator so weathercocking and
+  // gravity-turn are visible. Fall back to the launch angle on the pad and
+  // straight-up during descent (the chute right itself).
+  let tiltDeg = sample?.tiltDeg ?? launchAngleDeg;
+  if (!sample || sample.phase === 'pad') tiltDeg = launchAngleDeg;
   if (sample?.phase === 'descent') tiltDeg = 90;
 
   ctx.save();

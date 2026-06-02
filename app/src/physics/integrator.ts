@@ -289,5 +289,7 @@ function toSample(
     thrust,
     phase: s.phase,
     activeStage: s.activeStage,
+    tiltDeg: s.tiltDeg,
+    onRod: s.onRod,
   };
 }

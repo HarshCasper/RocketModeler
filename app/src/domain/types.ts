@@ -85,6 +85,8 @@ export interface FlightSample {
   thrust: number;
   phase: FlightPhase;
   activeStage: 0 | 1 | 2;
+  tiltDeg: number; // heading angle in degrees (90 = straight up)
+  onRod: boolean;
 }
 
 export interface StageMetrics {
