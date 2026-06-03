@@ -47,12 +47,12 @@ export function PostFlightSummary({ samples, onClose, onShare }: PostFlightSumma
           </button>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-sm">
-          <Stat label="Max altitude" value={`${maxAlt.toFixed(1)} m`} highlight />
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 text-sm">
+          <Stat label="Apogee" value={`${maxAlt.toFixed(1)} m`} highlight />
           <Stat label="Peak speed" value={`${peakSpeed.toFixed(1)} m/s`} />
           <Stat label="Peak g" value={`${peakAccelG.toFixed(1)} g`} />
-          <Stat label="Time to apogee" value={`${tToApogee.toFixed(1)} s`} />
-          <Stat label="Total flight" value={`${totalTime.toFixed(1)} s`} />
+          <Stat label="To apogee" value={`${tToApogee.toFixed(1)} s`} />
+          <Stat label="Flight time" value={`${totalTime.toFixed(1)} s`} />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -103,18 +103,19 @@ function Stat({
   return (
     <div
       className={
-        'rounded border px-3 py-2 ' +
+        'rounded border px-2.5 py-1.5 min-w-0 ' +
         (highlight ? 'bg-nasa text-white border-nasa' : 'bg-paper border-nasa/15 text-ink')
       }
     >
       <div
         className={
-          'text-[10px] uppercase tracking-wider ' + (highlight ? 'text-white/70' : 'text-ink/40')
+          'text-[10px] uppercase tracking-wider whitespace-nowrap ' +
+          (highlight ? 'text-white/70' : 'text-ink/40')
         }
       >
         {label}
       </div>
-      <div className="font-mono tabular-nums text-base">{value}</div>
+      <div className="font-mono tabular-nums text-sm sm:text-base">{value}</div>
     </div>
   );
 }
