@@ -2,7 +2,13 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import type { FlightConfig, FlightSample, Rocket } from '../domain/types';
 import { createSim, ignite, stepSim, type FlightSim } from '../physics/integrator';
 import { FLIGHT_DELTA_T } from '../domain/constants';
-import { playCountdownBeep, startThruster, stopThruster } from './audio';
+import {
+  playChutePop,
+  playCountdownBeep,
+  playStageDropClack,
+  startThruster,
+  stopThruster,
+} from './audio';
 
 export type RunState = 'idle' | 'countdown' | 'running' | 'paused' | 'ended';
 
@@ -55,6 +61,7 @@ export function useSimulation({ rocket, config }: UseSimulationArgs): Simulation
   }, []);
 
   const maxAltRef = useRef(0);
+  const prevSampleRef = useRef<FlightSample | null>(null);
   const loop = useCallback(
     (timestamp: number) => {
       const sim = simRef.current;
@@ -80,6 +87,13 @@ export function useSimulation({ rocket, config }: UseSimulationArgs): Simulation
         }
       }
       if (next) {
+        const prev = prevSampleRef.current;
+        // Detect transitions for audio cues.
+        if (config.soundEnabled && prev) {
+          if (prev.activeStage !== next.activeStage) playStageDropClack();
+          if (prev.phase !== 'descent' && next.phase === 'descent') playChutePop();
+        }
+        prevSampleRef.current = next;
         setSample(next);
         if (next.phase !== 'boost') stopThruster();
         if (next.phase === 'landed' || next.phase === 'crashed') {
@@ -92,7 +106,7 @@ export function useSimulation({ rocket, config }: UseSimulationArgs): Simulation
       }
       rafRef.current = requestAnimationFrame(loop);
     },
-    [config.timeScale, stop],
+    [config.timeScale, config.soundEnabled, stop],
   );
 
   const start = useCallback(() => {
@@ -103,6 +117,7 @@ export function useSimulation({ rocket, config }: UseSimulationArgs): Simulation
     maxAltRef.current = 0;
     samplesRef.current = [];
     setSamplesSnapshot([]);
+    prevSampleRef.current = null;
     accumulatedRef.current = 0;
     setRunState('countdown');
     setCountdown(3);

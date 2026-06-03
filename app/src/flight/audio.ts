@@ -87,3 +87,53 @@ export function stopThruster() {
     thrusterNode = null;
   }
 }
+
+export function playStageDropClack() {
+  const a = audio();
+  if (!a) return;
+  // Short pitched noise burst, like a clamp release.
+  const bufferSize = Math.floor(a.sampleRate * 0.2);
+  const buf = a.createBuffer(1, bufferSize, a.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    const env = Math.max(0, 1 - i / bufferSize);
+    data[i] = (Math.random() * 2 - 1) * env * 0.8;
+  }
+  const src = a.createBufferSource();
+  src.buffer = buf;
+  const filter = a.createBiquadFilter();
+  filter.type = 'bandpass';
+  filter.frequency.value = 1100;
+  filter.Q.value = 4;
+  const gain = a.createGain();
+  gain.gain.value = 0.3;
+  src.connect(filter);
+  filter.connect(gain);
+  gain.connect(a.destination);
+  src.start();
+}
+
+export function playChutePop() {
+  const a = audio();
+  if (!a) return;
+  // Soft poof — short low-pass noise.
+  const bufferSize = Math.floor(a.sampleRate * 0.3);
+  const buf = a.createBuffer(1, bufferSize, a.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    const env = Math.exp(-3 * (i / bufferSize));
+    data[i] = (Math.random() * 2 - 1) * env * 0.6;
+  }
+  const src = a.createBufferSource();
+  src.buffer = buf;
+  const filter = a.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = 220;
+  filter.Q.value = 0.7;
+  const gain = a.createGain();
+  gain.gain.value = 0.35;
+  src.connect(filter);
+  filter.connect(gain);
+  gain.connect(a.destination);
+  src.start();
+}
