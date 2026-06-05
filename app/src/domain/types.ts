@@ -9,8 +9,8 @@ export interface Material {
 export interface Engine {
   id: string;
   name: string;
-  manufacturer: 'Estes';
-  classLetter: '1/2A' | 'A' | 'B' | 'C' | 'D';
+  manufacturer: 'Estes' | 'Quest';
+  classLetter: '1/2A' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F';
   width: number; // mm
   length: number; // mm
   mass: number; // g, total wet
