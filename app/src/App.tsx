@@ -51,7 +51,7 @@ export default function App() {
             className="ml-2 text-xs font-normal text-ink/50 hover:text-nasa underline-offset-2 hover:underline"
             title="About"
           >
-            v1 · about
+            v1.1 · about
           </button>
         </h1>
         <nav className="ml-4 inline-flex rounded-full border border-nasa/20 p-1 bg-paper">
