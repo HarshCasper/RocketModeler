@@ -1,9 +1,25 @@
-import { useMemo } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useAppStore } from '../state/store';
 import { computeStageCg } from '../physics/cg';
 import { computeCpForRocket } from '../physics/cp-barrowman';
 import { getEngine } from '../domain/engines';
 import type { NoseConeShape } from '../domain/types';
+
+type DragField = 'bodyLength' | 'noseLength' | 'finWidth' | 'finLength';
+
+interface DragStart {
+  field: DragField;
+  startScreenX: number;
+  startScreenY: number;
+  startValue: number;
+}
+
+const FIELD_LIMITS: Record<DragField, { min: number; max: number }> = {
+  bodyLength: { min: 10, max: 100 },
+  noseLength: { min: 4, max: 30 },
+  finWidth: { min: 2, max: 20 },
+  finLength: { min: 4, max: 50 },
+};
 
 export function noseConePath(
   shape: NoseConeShape,
@@ -53,9 +69,67 @@ const BASELINE_Y = VIEW_HEIGHT - 30;
 export function RocketViewer() {
   const rocket = useAppStore((s) => s.rocket);
   const stagesShowing = useAppStore((s) => s.stagesShowing);
+  const updateRocket = useAppStore((s) => s.updateRocket);
+  const svgRef = useRef<SVGSVGElement>(null);
+  const dragRef = useRef<DragStart | null>(null);
+  const [dragging, setDragging] = useState<DragField | null>(null);
 
   const { cg } = useMemo(() => computeStageCg(rocket, stagesShowing), [rocket, stagesShowing]);
   const { cp } = useMemo(() => computeCpForRocket(rocket), [rocket]);
+
+  function startDrag(field: DragField, e: React.PointerEvent<SVGElement>) {
+    e.preventDefault();
+    e.stopPropagation();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    const start: DragStart = {
+      field,
+      startScreenX: e.clientX,
+      startScreenY: e.clientY,
+      startValue:
+        field === 'bodyLength'
+          ? rocket.body.length
+          : field === 'noseLength'
+            ? rocket.noseCone.length
+            : field === 'finWidth'
+              ? rocket.fins.width
+              : rocket.fins.length,
+    };
+    dragRef.current = start;
+    setDragging(field);
+  }
+
+  function continueDrag(e: React.PointerEvent<SVGElement>) {
+    const drag = dragRef.current;
+    if (!drag) return;
+    const svgEl = svgRef.current;
+    if (!svgEl) return;
+    const scaleY = VIEW_HEIGHT / svgEl.clientHeight;
+    const scaleX = VIEW_WIDTH / svgEl.clientWidth;
+    const dyView = (e.clientY - drag.startScreenY) * scaleY;
+    const dxView = (e.clientX - drag.startScreenX) * scaleX;
+    let delta = 0;
+    if (drag.field === 'bodyLength' || drag.field === 'noseLength' || drag.field === 'finLength') {
+      delta = -dyView / PIXELS_PER_CM;
+    } else if (drag.field === 'finWidth') {
+      delta = -dxView / PIXELS_PER_CM;
+    }
+    const limits = FIELD_LIMITS[drag.field];
+    const next = Math.max(limits.min, Math.min(limits.max, drag.startValue + delta));
+    if (drag.field === 'bodyLength') {
+      updateRocket((r) => ({ ...r, body: { ...r.body, length: next } }));
+    } else if (drag.field === 'noseLength') {
+      updateRocket((r) => ({ ...r, noseCone: { ...r.noseCone, length: next } }));
+    } else if (drag.field === 'finWidth') {
+      updateRocket((r) => ({ ...r, fins: { ...r.fins, width: next } }));
+    } else {
+      updateRocket((r) => ({ ...r, fins: { ...r.fins, length: next } }));
+    }
+  }
+
+  function endDrag() {
+    dragRef.current = null;
+    setDragging(null);
+  }
 
   const bodyLengthPx = rocket.body.length * PIXELS_PER_CM;
   const bodyWidthPx = rocket.body.diameter * PIXELS_PER_CM;
@@ -92,8 +166,9 @@ export function RocketViewer() {
 
   return (
     <svg
+      ref={svgRef}
       viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`}
-      className="w-full h-full max-h-[600px]"
+      className="w-full h-full max-h-[600px] group"
       role="img"
       aria-label="Rocket diagram"
     >
@@ -193,6 +268,81 @@ export function RocketViewer() {
       >
         CP
       </text>
+
+      {/* Direct-manipulation drag handles — hidden until the diagram is
+          hovered, except while a handle is actively being dragged. */}
+      <DragHandle
+        cx={centerX}
+        cy={noseTipY}
+        active={dragging === 'noseLength'}
+        onPointerDown={(e) => startDrag('noseLength', e)}
+        onPointerMove={continueDrag}
+        onPointerUp={endDrag}
+      />
+      <DragHandle
+        cx={bodyRight + 10}
+        cy={(bodyTopY + (BASELINE_Y - finHeightPx - finLengthPx)) / 2}
+        active={dragging === 'bodyLength'}
+        onPointerDown={(e) => startDrag('bodyLength', e)}
+        onPointerMove={continueDrag}
+        onPointerUp={endDrag}
+        orientation="vertical"
+      />
+      <DragHandle
+        cx={bodyLeft - finWidthPx - 6}
+        cy={finBottomY}
+        active={dragging === 'finWidth'}
+        onPointerDown={(e) => startDrag('finWidth', e)}
+        onPointerMove={continueDrag}
+        onPointerUp={endDrag}
+        orientation="horizontal"
+      />
+      <DragHandle
+        cx={bodyLeft - finWidthPx - 6}
+        cy={finTopY}
+        active={dragging === 'finLength'}
+        onPointerDown={(e) => startDrag('finLength', e)}
+        onPointerMove={continueDrag}
+        onPointerUp={endDrag}
+      />
     </svg>
+  );
+}
+
+interface DragHandleProps {
+  cx: number;
+  cy: number;
+  active: boolean;
+  onPointerDown: (e: React.PointerEvent<SVGElement>) => void;
+  onPointerMove: (e: React.PointerEvent<SVGElement>) => void;
+  onPointerUp: (e: React.PointerEvent<SVGElement>) => void;
+  orientation?: 'vertical' | 'horizontal';
+}
+
+function DragHandle({
+  cx,
+  cy,
+  active,
+  onPointerDown,
+  onPointerMove,
+  onPointerUp,
+  orientation = 'vertical',
+}: DragHandleProps) {
+  return (
+    <g
+      className={
+        active
+          ? 'opacity-100 cursor-grabbing'
+          : 'opacity-0 group-hover:opacity-100 transition-opacity ' +
+            (orientation === 'horizontal' ? 'cursor-ew-resize' : 'cursor-ns-resize')
+      }
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
+    >
+      <circle cx={cx} cy={cy} r={9} fill="transparent" />
+      <circle cx={cx} cy={cy} r={4} fill="#0B3D91" stroke="white" strokeWidth={1.5} />
+    </g>
   );
 }
