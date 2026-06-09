@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { DimensionsPanel } from './DimensionsPanel';
 import { EnginesPanel } from './EnginesPanel';
 import { RocketViewer } from './RocketViewer';
@@ -10,14 +10,69 @@ import { pushToast } from '../ui/Toast';
 
 type PanelTab = 'geometry' | 'engines' | 'materials';
 
+function exportSvgAsPng(svg: SVGSVGElement, filename: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const xml = new XMLSerializer().serializeToString(svg);
+    const blob = new Blob([xml], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = () => {
+      const cnv = document.createElement('canvas');
+      const scale = 2;
+      cnv.width = svg.clientWidth * scale;
+      cnv.height = svg.clientHeight * scale;
+      const ctx = cnv.getContext('2d');
+      if (!ctx) {
+        URL.revokeObjectURL(url);
+        reject(new Error('no 2d context'));
+        return;
+      }
+      ctx.fillStyle = '#F4F7FB';
+      ctx.fillRect(0, 0, cnv.width, cnv.height);
+      ctx.drawImage(img, 0, 0, cnv.width, cnv.height);
+      cnv.toBlob((b) => {
+        URL.revokeObjectURL(url);
+        if (!b) {
+          reject(new Error('toBlob failed'));
+          return;
+        }
+        const downloadUrl = URL.createObjectURL(b);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = filename;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+        resolve();
+      }, 'image/png');
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('image load failed'));
+    };
+    img.src = url;
+  });
+}
+
 export function DesignMode() {
   const [tab, setTab] = useState<PanelTab>('geometry');
   const setRocket = useAppStore((s) => s.setRocket);
+  const viewerSectionRef = useRef<HTMLElement>(null);
+
+  async function handleExport() {
+    const svg = viewerSectionRef.current?.querySelector('svg');
+    if (!svg) return;
+    try {
+      await exportSvgAsPng(svg as SVGSVGElement, 'rocketmodeler-design.png');
+      pushToast('Design exported as PNG', 'success');
+    } catch {
+      pushToast('PNG export failed', 'error');
+    }
+  }
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-4 p-4 h-full">
-      <section className="rounded-lg border border-nasa/15 bg-white shadow-sm flex flex-col min-h-[400px]">
-        <div className="flex items-center gap-2 border-b border-nasa/10 px-4 py-2 text-xs">
+      <section ref={viewerSectionRef} className="rounded-lg border border-nasa/15 bg-white shadow-sm flex flex-col min-h-[400px]">
+        <div className="flex items-center gap-2 border-b border-nasa/10 px-4 py-2 text-xs flex-wrap">
           <span className="text-ink/40 uppercase tracking-wider">Presets</span>
           {PRESETS.map((p) => (
             <button
@@ -33,6 +88,14 @@ export function DesignMode() {
               {p.name}
             </button>
           ))}
+          <button
+            type="button"
+            onClick={handleExport}
+            className="ml-auto px-2.5 py-0.5 rounded-full border border-nasa/15 text-ink/60 hover:text-nasa hover:bg-nasa/5 transition-colors"
+            title="Save the current rocket diagram as a PNG"
+          >
+            ↓ PNG
+          </button>
         </div>
         <div className="flex-1 grid place-items-center bg-blueprint bg-grid overflow-hidden">
           <RocketViewer />
