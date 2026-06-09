@@ -1,11 +1,19 @@
 import type { FlightSample } from '../domain/types';
 import { FlightChart } from './FlightChart';
 import { GRAVITY } from '../domain/constants';
+import { copyShareLink } from '../url/useUrlSync';
+import { pushToast } from '../ui/Toast';
 
 interface PostFlightSummaryProps {
   samples: FlightSample[];
   onClose: () => void;
   onShare?: () => void;
+}
+
+async function defaultShare() {
+  const ok = await copyShareLink();
+  if (ok) pushToast('Share link copied to clipboard', 'success');
+  else pushToast('Could not access clipboard', 'error');
 }
 
 export function PostFlightSummary({ samples, onClose, onShare }: PostFlightSummaryProps) {
@@ -69,15 +77,13 @@ export function PostFlightSummary({ samples, onClose, onShare }: PostFlightSumma
         </div>
 
         <div className="flex justify-end gap-2 pt-2">
-          {onShare && (
-            <button
-              type="button"
-              onClick={onShare}
-              className="px-4 py-1.5 rounded text-sm font-medium border border-nasa/30 text-nasa hover:bg-nasa/10"
-            >
-              Copy share link
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={onShare ?? defaultShare}
+            className="px-4 py-1.5 rounded text-sm font-medium border border-nasa/30 text-nasa hover:bg-nasa/10"
+          >
+            Copy share link
+          </button>
           <button
             type="button"
             onClick={onClose}
