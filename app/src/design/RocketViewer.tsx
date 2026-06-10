@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 import { useAppStore } from '../state/store';
 import { computeStageCg } from '../physics/cg';
 import { computeCpForRocket } from '../physics/cp-barrowman';
@@ -237,37 +238,45 @@ export function RocketViewer() {
       })}
 
       {/* CG marker — yin-yang style circle (alternating quadrants) */}
-      <g transform={`translate(${centerX}, ${cgY})`}>
+      <motion.g
+        initial={false}
+        animate={{ x: centerX, y: cgY }}
+        transition={{ type: 'spring', stiffness: 240, damping: 26 }}
+      >
         <circle r={9} fill="white" stroke="#0B1320" strokeWidth={1.2} />
         <path d="M 0,-9 A 9 9 0 0 1 0,9 L 0,0 Z" fill="#0B1320" />
         <path d="M 0,9 A 9 9 0 0 1 0,-9 L 0,0 Z" fill="white" />
         <path d="M -9,0 A 9 9 0 0 1 0,-9 L 0,0 Z" fill="#0B1320" />
         <path d="M 9,0 A 9 9 0 0 1 0,9 L 0,0 Z" fill="#0B1320" />
-      </g>
-      <text
-        x={centerX + 14}
-        y={cgY + 4}
-        fontSize={10}
-        fontFamily="JetBrains Mono, ui-monospace, monospace"
-        fill="#0B1320"
-      >
-        CG
-      </text>
+        <text
+          x={14}
+          y={4}
+          fontSize={10}
+          fontFamily="JetBrains Mono, ui-monospace, monospace"
+          fill="#0B1320"
+        >
+          CG
+        </text>
+      </motion.g>
 
       {/* CP marker — small filled dot inside outlined circle */}
-      <g transform={`translate(${centerX}, ${cpY})`}>
+      <motion.g
+        initial={false}
+        animate={{ x: centerX, y: cpY }}
+        transition={{ type: 'spring', stiffness: 240, damping: 26 }}
+      >
         <circle r={9} fill="white" stroke="#0B3D91" strokeWidth={1.2} />
         <circle r={3} fill="#0B3D91" />
-      </g>
-      <text
-        x={centerX + 14}
-        y={cpY + 4}
-        fontSize={10}
-        fontFamily="JetBrains Mono, ui-monospace, monospace"
-        fill="#0B3D91"
-      >
-        CP
-      </text>
+        <text
+          x={14}
+          y={4}
+          fontSize={10}
+          fontFamily="JetBrains Mono, ui-monospace, monospace"
+          fill="#0B3D91"
+        >
+          CP
+        </text>
+      </motion.g>
 
       {/* Direct-manipulation drag handles — hidden until the diagram is
           hovered, except while a handle is actively being dragged. */}
