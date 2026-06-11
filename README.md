@@ -8,14 +8,19 @@ This project is **not** affiliated with or endorsed by NASA. The original applet
 
 ## Features
 
-- **Design mode** with body, nose-cone and fin geometry sliders, materials picker (balsa / plastic / hollow plastic / custom), 1–3 stages, 3 or 4 fins.
-- **Curated engine catalog** (Estes 1/2A through D, including booster variants).
-- **Live CG / CP / mass readout** with stability caliber gauge — green / yellow / red zones.
+- **Design mode** with body, nose-cone and fin geometry sliders, materials picker (balsa / plastic / hollow plastic / custom), 1–3 stages, 3 or 4 fins, and **selectable nose cone shapes** (cone / ogive / parabolic / elliptical) with shape-aware Barrowman terms and typical-Cd suggestions.
+- **Hover-reveal drag handles** on the SVG diagram for direct manipulation of nose length, body length, fin length and fin width.
+- **Curated engine catalog** with Estes motors from 1/2A through F (E9, E12, F15 sustainers), each with an inline thrust-curve mini-chart and total-impulse readout.
+- **Preset rocket library** — Estes Alpha III, Big Bertha, and a two-stage explorer, one click away.
+- **Live CG / CP / mass readout** with stability caliber gauge — green / yellow / red zones, threshold tuned to hobby conventions (1.0–2.5 cal).
 - **Multi-stage CG inspector** — view CG/CP for the full rocket, top N stages, or just the top stage (the original applet's sneakiest pedagogical feature).
-- **Flight mode** with Canvas2D viewer: real-time integrator at 100 sub-steps per frame, ISA atmosphere, parachute deploy, particle exhaust, sky gradient that deepens with altitude.
-- **Post-flight summary** with altitude + speed mini-charts and key stats.
+- **Flight mode** with Canvas2D viewer: real-time integrator at 100 sub-steps per frame, ISA atmosphere, launch-rod constraint, aero-stability gravity turn (weathercocking emerges from wind + margin), trajectory trail, wind direction indicator, parachute deploy, particle exhaust, sky gradient that deepens with altitude.
+- **HUD with live g-force, in-flight margin recompute, and on-rod / phase indicator.**
+- **Post-flight summary** with altitude / speed / acceleration mini-charts, peak g, and key stats.
 - **Share-by-URL** — every design edit gzips into the URL hash, so the address bar is always a shareable snapshot.
-- **Opt-in audio** — synthesized 3-2-1 countdown beep and thruster rumble via Web Audio (no .au files needed).
+- **PNG export** of the rocket diagram from the design viewer.
+- **Keyboard shortcuts** — `D` design, `L` launch, `Space` start/pause, `R` reset, `?` about.
+- **Opt-in audio** — synthesized 3-2-1 countdown beep, thruster rumble, plus stage-drop and parachute-deploy cues, all via Web Audio (no .au files needed).
 
 ## Repo layout
 
@@ -33,13 +38,18 @@ This project is **not** affiliated with or endorsed by NASA. The original applet
 cd app
 npm install
 npm run dev      # vite dev server on http://localhost:5173
-npm test         # vitest physics suite (16 tests)
+npm test         # vitest physics + url-codec suite (32 tests)
 npm run build    # production static bundle in app/dist
 ```
 
 ## Physics
 
-CG follows the original applet's mass-weighted port (cone, body tube, fins, engines, payload). CP uses simplified Barrowman (cone nose + triangular fin terms, with body-fin interference). Atmosphere is ISA troposphere. Flight integration is semi-Euler with 100 sub-steps per Δt of 0.045 s. See `app/src/physics/` and the `SPEC.md` for details and reference formulae.
+- **CG** follows the original applet's mass-weighted port (cone, body tube, fins, engines, payload) and is now recomputed in flight as fuel burns down and stages drop.
+- **CP** uses Barrowman with shape-dependent nose terms (Cone 0.667 L, Ogive 0.466 L, Parabolic 0.5 L, Elliptical 0.333 L) and the triangular-fin closed form with body-fin interference (`K_fb`).
+- **Atmosphere** is the ISA troposphere model — `ρ(h) = ρ₀ · (1 − L·h/T₀)^((g·M/R·L)−1)` up to the tropopause.
+- **Flight integration** is semi-Euler with 100 sub-steps per Δt of 0.045 s, plus a launch-rod axis-projection constraint until the rocket clears 110 cm, and an aerodynamic heading-alignment term that produces gravity-turn and weathercocking from wind + stability margin.
+
+See `app/src/physics/` and `SPEC.md` for the per-module breakdown and reference formulae.
 
 ## Credits
 
