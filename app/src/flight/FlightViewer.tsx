@@ -14,11 +14,19 @@ const CANVAS_H = 520;
 
 const TRAIL_MAX = 300; // points
 
+interface SmokeParticle {
+  x: number; // m (world)
+  alt: number; // m (world)
+  age: number; // seconds-ish (incremented each frame)
+  size: number; // initial radius (px)
+}
+
 export function FlightViewer({ rocket, sample, launchAngle, countdown, windSpeed }: FlightViewerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const trailRef = useRef<{ x: number; altitude: number }[]>([]);
   const lastStageRef = useRef<number | null>(null);
   const stageFlashRef = useRef<number>(0); // 0..1 fade
+  const smokeRef = useRef<SmokeParticle[]>([]);
 
   useEffect(() => {
     const cnv = canvasRef.current;
@@ -29,6 +37,7 @@ export function FlightViewer({ rocket, sample, launchAngle, countdown, windSpeed
       trailRef.current = [];
       lastStageRef.current = null;
       stageFlashRef.current = 0;
+      smokeRef.current = [];
     } else {
       trailRef.current.push({ x: sample.xDistance, altitude: sample.altitude });
       if (trailRef.current.length > TRAIL_MAX) {
@@ -39,8 +48,33 @@ export function FlightViewer({ rocket, sample, launchAngle, countdown, windSpeed
       }
       lastStageRef.current = sample.activeStage;
       stageFlashRef.current = Math.max(0, stageFlashRef.current - 0.04);
+      // Emit smoke during boost; advect existing particles every frame.
+      if (sample.phase === 'boost') {
+        smokeRef.current.push({
+          x: sample.xDistance + (Math.random() - 0.5) * 0.05,
+          alt: Math.max(0, sample.altitude - 0.05),
+          age: 0,
+          size: 6 + Math.random() * 4,
+        });
+      }
+      for (const p of smokeRef.current) {
+        p.age += 1;
+        // Drift in wind direction over time.
+        p.x += windSpeed * 0.0008;
+      }
+      smokeRef.current = smokeRef.current.filter((p) => p.age < 90).slice(-160);
     }
-    draw(ctx, rocket, sample, launchAngle, countdown, windSpeed, trailRef.current, stageFlashRef.current);
+    draw(
+      ctx,
+      rocket,
+      sample,
+      launchAngle,
+      countdown,
+      windSpeed,
+      trailRef.current,
+      stageFlashRef.current,
+      smokeRef.current,
+    );
   }, [rocket, sample, launchAngle, countdown, windSpeed]);
 
   return (
@@ -64,6 +98,7 @@ function draw(
   windSpeed: number,
   trail: { x: number; altitude: number }[],
   stageFlash: number,
+  smoke: SmokeParticle[],
 ) {
   const W = ctx.canvas.width;
   const H = ctx.canvas.height;
@@ -119,6 +154,20 @@ function draw(
   ctx.moveTo(rodBaseX, rodBaseY);
   ctx.lineTo(rodTipX, rodTipY);
   ctx.stroke();
+
+  // Smoke plume — draw before trail so the line is in front.
+  if (smoke.length > 0) {
+    for (const p of smoke) {
+      const px = padOriginX + p.x * scale;
+      const py = padBaselineY - p.alt * scale;
+      const alpha = Math.max(0, 0.35 * (1 - p.age / 90));
+      const r = p.size * (1 + p.age * 0.02);
+      ctx.fillStyle = `rgba(180,180,180,${alpha})`;
+      ctx.beginPath();
+      ctx.arc(px, py, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
 
   // Trajectory trail.
   if (trail.length > 1) {
