@@ -48,6 +48,11 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
             <strong>Source:</strong>{' '}
             <span className="font-mono text-xs">github.com/harshcasper/rocket-modeler</span>
           </p>
+          <p className="text-[11px] text-ink/50">
+            v1.1 — adds nose cone shapes, launch-rod constraint, weathercocking,
+            live in-flight margin, preset rocket library, thrust-curve charts,
+            PNG export, and a trajectory smoke plume.
+          </p>
         </div>
 
         <div className="space-y-2">
