@@ -82,6 +82,9 @@ export function FlightControls({
         onChange={(v) => updateFlight((f) => ({ ...f, windSpeed: v }))}
         disabled={!canLaunch}
       />
+      <div className="text-[10px] text-ink/40 -mt-2">
+        Negative wind blows toward the launch pad; positive carries the rocket downrange.
+      </div>
       <SliderField
         label="Time scale"
         value={flight.timeScale}
