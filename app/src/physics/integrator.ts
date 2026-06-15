@@ -198,7 +198,7 @@ export function stepSim(sim: FlightSim): FlightSample {
       }
     } else if (s.phase === 'coast' && engine && elapsed >= engine.totalBurnTime + engine.delayTime) {
       s.phase = 'descent';
-      // Parachute opens — slow horizontal motion too.
+      // Parachute opens – slow horizontal motion too.
     }
 
     const mass = currentMass(sim);
@@ -211,7 +211,7 @@ export function stepSim(sim: FlightSim): FlightSample {
     const thrustVx = thrust * Math.cos(tiltRad);
     const thrustVy = thrust * Math.sin(tiltRad);
 
-    // Drag — opposes airspeed vector (velocity minus wind).
+    // Drag – opposes airspeed vector (velocity minus wind).
     const windVx = sim.config.windSpeed; // m/s, horizontal
     const airVx = s.vx - windVx;
     const airVy = s.vy;
@@ -296,7 +296,7 @@ export function stepSim(sim: FlightSim): FlightSample {
     if (s.altitude > s.maxAlt) s.maxAlt = s.altitude;
   }
 
-  // Update live CG/CP at frame cadence (cheap enough — once per frame, not per
+  // Update live CG/CP at frame cadence (cheap enough – once per frame, not per
   // sub-step). Captures fuel-burndown CG shift between stage drops.
   if (s.phase === 'boost' || s.phase === 'coast') {
     const live = computeLiveCgCp(sim);

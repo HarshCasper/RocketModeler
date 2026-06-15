@@ -1,36 +1,49 @@
 # RocketModeler
 
-A modern web rebuild of NASA Glenn Research Center's RocketModeler Java applet (Eric Bishop, OSU / NASA GRC, c. 2002).
+RocketModeler is a browser version of the NASA Glenn Research Center model
+rocket applet that Eric Bishop wrote in Java around 2002. The Java plugin
+that ran the original has been gone for years, so this is a TypeScript and
+React rebuild that keeps the same design loop: build a paper rocket, watch
+how its centre of gravity and centre of pressure move as you tweak it,
+then put it on the pad and fly it.
 
-The original applet ran in browsers via the Java Plugin, which has been gone for years. This is an independent reimplementation in TypeScript + React, targeting the same pedagogical experience — design a model rocket, see its CG and CP shift in real time, then launch it and watch the altitude tick up — with quietly upgraded physics underneath.
+This project is not affiliated with NASA. The original applet is in the
+public domain as US Government work.
 
-This project is **not** affiliated with or endorsed by NASA. The original applet is in the public domain as US government work.
+## What you can do
 
-## Features
+Design view: drag handles on the rocket SVG let you change nose length,
+body length and the fins by hand. Sliders cover the same parameters plus
+fin count, stage count, materials, drag coefficient, recovery payload
+mass and parachute size. You can pick a nose shape from cone, ogive,
+parabolic or elliptical, and the Barrowman CP recomputes for the chosen
+shape. A small library of preset rockets (Estes Alpha III, Big Bertha and
+a two-stage explorer) is one click away. Each engine in the catalog shows
+its thrust curve and total impulse inline. The stability gauge expands to
+fit overstable designs instead of pegging the right edge.
 
-- **Design mode** with body, nose-cone and fin geometry sliders, materials picker (balsa / plastic / hollow plastic / custom), 1–3 stages, 3 or 4 fins, and **selectable nose cone shapes** (cone / ogive / parabolic / elliptical) with shape-aware Barrowman terms and typical-Cd suggestions.
-- **Hover-reveal drag handles** on the SVG diagram for direct manipulation of nose length, body length, fin length and fin width.
-- **Curated engine catalog** with Estes motors from 1/2A through F (E9, E12, F15 sustainers), each with an inline thrust-curve mini-chart and total-impulse readout.
-- **Preset rocket library** — Estes Alpha III, Big Bertha, and a two-stage explorer, one click away.
-- **Live CG / CP / mass readout** with stability caliber gauge — green / yellow / red zones, threshold tuned to hobby conventions (1.0–2.5 cal).
-- **Multi-stage CG inspector** — view CG/CP for the full rocket, top N stages, or just the top stage (the original applet's sneakiest pedagogical feature).
-- **Flight mode** with Canvas2D viewer: real-time integrator at 100 sub-steps per frame, ISA atmosphere, launch-rod constraint, aero-stability gravity turn (weathercocking emerges from wind + margin), trajectory trail, wind direction indicator, parachute deploy, particle exhaust, sky gradient that deepens with altitude.
-- **HUD with live g-force, in-flight margin recompute, and on-rod / phase indicator.**
-- **Post-flight summary** with altitude / speed / acceleration mini-charts, peak g, and key stats.
-- **Share-by-URL** — every design edit gzips into the URL hash, so the address bar is always a shareable snapshot.
-- **PNG export** of the rocket diagram from the design viewer.
-- **Keyboard shortcuts** — `D` design, `L` launch, `Space` start/pause, `R` reset, `?` about.
-- **Opt-in audio** — synthesized 3-2-1 countdown beep, thruster rumble, plus stage-drop and parachute-deploy cues, all via Web Audio (no .au files needed).
+Launch view: a Canvas2D scene that follows the rocket up. There is a
+launch rod constraint on the way up, a heading alignment term that
+produces gravity turn and weathercocking from wind plus stability margin,
+and a live recompute of CG, CP and margin as the stages drop. The HUD
+shows time, altitude, speed, g-force, mass, stage, current margin and
+phase. A trail traces the actual trajectory, a smoke plume drifts in the
+wind, and Mach 1, apogee and parachute deployment fire as quiet caption
+banners with timestamps. Force vectors for thrust, gravity and velocity
+can be turned on from the controls panel.
 
-## Repo layout
+After landing, the summary modal lists apogee, peak speed, peak g, time
+to apogee and total flight time. Altitude, speed and acceleration are
+plotted as small charts. A replay button plays the flight back at
+slow-motion with a scrub bar so you can stop on a specific moment.
 
-```
-/
-├── RocketModeler/   ← legacy applet, kept for reference (untouched)
-├── SPEC.md          ← design spec for the modern rebuild
-├── app/             ← the new web app (Vite + React + TS)
-└── README.md
-```
+Shortcuts: `D` design, `L` launch, `Space` to launch and pause, `R` to
+reset, `?` for the about dialog.
+
+The address bar always contains a shareable snapshot of the current
+rocket. Designs round-trip through gzip and base64url so the hash stays
+short. Last session is also kept in `localStorage`, with a dark mode
+preference saved alongside it.
 
 ## Run it
 
@@ -38,21 +51,35 @@ This project is **not** affiliated with or endorsed by NASA. The original applet
 cd app
 npm install
 npm run dev      # vite dev server on http://localhost:5173
-npm test         # vitest physics + url-codec suite (32 tests)
+npm test         # vitest physics and url-codec suite
 npm run build    # production static bundle in app/dist
 ```
 
-## Physics
+## Physics, in one screen
 
-- **CG** follows the original applet's mass-weighted port (cone, body tube, fins, engines, payload) and is now recomputed in flight as fuel burns down and stages drop.
-- **CP** uses Barrowman with shape-dependent nose terms (Cone 0.667 L, Ogive 0.466 L, Parabolic 0.5 L, Elliptical 0.333 L) and the triangular-fin closed form with body-fin interference (`K_fb`).
-- **Atmosphere** is the ISA troposphere model — `ρ(h) = ρ₀ · (1 − L·h/T₀)^((g·M/R·L)−1)` up to the tropopause.
-- **Flight integration** is semi-Euler with 100 sub-steps per Δt of 0.045 s, plus a launch-rod axis-projection constraint until the rocket clears 110 cm, and an aerodynamic heading-alignment term that produces gravity-turn and weathercocking from wind + stability margin.
+* CG follows the original applet's mass-weighted calculation across nose
+  cone, body tube, fins, engines and payload. The same calculation runs
+  in flight, so the CG you see in the HUD shifts with fuel burn and stage
+  drops.
+* CP uses Barrowman with shape-dependent nose terms. The X coefficient is
+  0.667 L for a cone, 0.466 L for an ogive, 0.5 L for a parabolic and
+  0.333 L for an elliptical nose. The fin term is the closed form for
+  triangular delta fins with body-fin interference `K_fb = 1 + R/(s+R)`.
+* Atmosphere is the ISA troposphere model, valid up to 11 km.
+* Flight integration is semi-Euler at 100 sub-steps per visible frame
+  (Δt = 0.045 s). While the rocket is on the launch rod, motion is
+  projected onto the rod axis. Once it clears the rod, an aerodynamic
+  alignment term turns the heading toward the relative wind, with
+  stiffness scaled by stability margin and dynamic pressure. That term
+  is what makes the rocket gravity-turn and weathercock without doing
+  full moment-of-inertia integration.
 
-See `app/src/physics/` and `SPEC.md` for the per-module breakdown and reference formulae.
+Everything lives under `app/src/physics/`. See `SPEC.md` for the original
+design contract.
 
 ## Credits
 
-- Original RocketModeler applet: Eric Bishop, Ohio State University / NASA Glenn Research Center.
-- Modern rebuild: Harsh Mishra.
-- License: MIT (see LICENSE).
+* Eric Bishop wrote the original RocketModeler at Ohio State University
+  while working with NASA Glenn Research Center.
+* This browser rebuild was written by Harsh Mishra.
+* MIT licensed. See `LICENSE`.

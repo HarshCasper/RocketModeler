@@ -1,5 +1,5 @@
 // Tiny synth-based audio for countdown beep + thruster rumble. No external
-// .au/.mp3 files — we generate everything with the WebAudio API.
+// .au/.mp3 files – we generate everything with the WebAudio API.
 
 let ctx: AudioContext | null = null;
 let thrusterNode: { stop: () => void } | null = null;
@@ -116,7 +116,7 @@ export function playStageDropClack() {
 export function playChutePop() {
   const a = audio();
   if (!a) return;
-  // Soft poof — short low-pass noise.
+  // Soft poof – short low-pass noise.
   const bufferSize = Math.floor(a.sampleRate * 0.3);
   const buf = a.createBuffer(1, bufferSize, a.sampleRate);
   const data = buf.getChannelData(0);

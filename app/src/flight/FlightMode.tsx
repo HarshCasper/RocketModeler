@@ -44,15 +44,20 @@ export function FlightMode() {
     return () => window.removeEventListener('keydown', onKey);
   }, [sim]);
 
+  const dark = useAppStore((s) => s.dark);
+  const showForces = useAppStore((s) => s.showForces);
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 p-4 h-full">
-      <section className="relative rounded-lg border border-nasa/15 bg-white shadow-sm overflow-hidden">
+      <section className="relative rounded-lg border border-nasa/15 bg-white shadow-sm overflow-hidden dark:bg-ink dark:border-white/10">
         <FlightViewer
           rocket={rocket}
           sample={sim.sample}
           launchAngle={flight.launchAngle}
           countdown={sim.countdown}
           windSpeed={flight.windSpeed}
+          showForces={showForces}
+          dark={dark}
         />
         {summaryOpen && (
           <PostFlightSummary
@@ -61,7 +66,7 @@ export function FlightMode() {
           />
         )}
       </section>
-      <aside className="rounded-lg border border-nasa/15 bg-white shadow-sm p-4 space-y-4 overflow-y-auto">
+      <aside className="rounded-lg border border-nasa/15 bg-white shadow-sm p-4 space-y-4 overflow-y-auto dark:bg-ink/80 dark:border-white/10 dark:text-paper">
         <FlightHUD sample={sim.sample} maxAlt={sim.maxAlt} />
         <FlightControls
           runState={sim.runState}

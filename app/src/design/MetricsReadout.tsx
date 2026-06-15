@@ -11,7 +11,7 @@ const CG_HELP =
   'Center of gravity, measured from the bottom of the rocket. Where the rocket would balance on a fingertip.';
 const CP_HELP =
   'Center of pressure, the aerodynamic balance point. For a stable rocket, CP must sit behind CG (closer to the tail).';
-const MASS_HELP = 'Total wet mass — airframe, fins, payload, and fully fueled engines.';
+const MASS_HELP = 'Total wet mass – airframe, fins, payload, and fully fueled engines.';
 
 export function MetricsReadout() {
   const rocket = useAppStore((s) => s.rocket);

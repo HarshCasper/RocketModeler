@@ -1,5 +1,5 @@
 export function num(value: number, digits = 1): string {
-  if (!Number.isFinite(value)) return '—';
+  if (!Number.isFinite(value)) return '–';
   return value.toFixed(digits);
 }
 

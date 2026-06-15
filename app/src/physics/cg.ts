@@ -20,7 +20,7 @@ export interface CgResult {
 
 interface MaterialSettings {
   noseConeDensity: number; // g/cm^3
-  finDensityThickness: number; // g/cm^2 — density × thickness
+  finDensityThickness: number; // g/cm^2 – density × thickness
 }
 
 export function materialSettingsFor(rocket: Rocket): MaterialSettings {
@@ -46,14 +46,14 @@ export function computeCg(
   const finCount = rocket.finCount;
   const recpaymass = rocket.recoveryPayloadMass;
 
-  // Nose cone mass — original used (1/2)*pi*r^2*L (paraboloid-ish, faithful).
+  // Nose cone mass – original used (1/2)*pi*r^2*L (paraboloid-ish, faithful).
   const noseConeMass =
     mats.noseConeDensity * 0.5 * Math.PI * (bodyDiameter / 2) ** 2 * noseLen;
 
-  // Fin mass per fin — right triangle area 1/2 * length * width × density-thickness.
+  // Fin mass per fin – right triangle area 1/2 * length * width × density-thickness.
   const finMass = mats.finDensityThickness * 0.5 * finLength * finWidth;
 
-  // Body tube mass — hollow cylinder (thin shell).
+  // Body tube mass – hollow cylinder (thin shell).
   const bodyTubeMass =
     BODY_TUBE_DENSITY * bodyLength * Math.PI * bodyDiameter * BODY_TUBE_THICKNESS;
 

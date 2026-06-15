@@ -36,7 +36,7 @@ describe('flight integrator', () => {
     const earlyBoost = samples.find((s) => s.phase === 'boost' && s.activeStage === 0);
     const afterDrop = samples.find((s) => s.phase === 'boost' && s.activeStage === 1);
     if (!earlyBoost || !afterDrop) throw new Error('expected to find both stages');
-    // Margin is recomputed when the booster drops — values should differ
+    // Margin is recomputed when the booster drops – values should differ
     // meaningfully (more than rounding noise).
     expect(Math.abs(earlyBoost.marginCal - afterDrop.marginCal)).toBeGreaterThan(0.1);
     // Each sample should also expose a sensible cg and cp.
@@ -45,7 +45,7 @@ describe('flight integrator', () => {
   });
 
   it('an unstable rocket lands without producing NaN values', () => {
-    // Move the body and payload so CG drops below CP — should mark unstable
+    // Move the body and payload so CG drops below CP – should mark unstable
     // and tip over without breaking the integrator.
     const tippy = {
       ...DEFAULT_ROCKET,

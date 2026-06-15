@@ -154,7 +154,7 @@ export function RocketViewer() {
   const cgY = BASELINE_Y - cg * PIXELS_PER_CM;
   const cpY = BASELINE_Y - cp * PIXELS_PER_CM;
 
-  // Stage separator lines — drawn between stages, from below.
+  // Stage separator lines – drawn between stages, from below.
   const stageLines: number[] = [];
   let cumulative = 0;
   for (let i = 0; i < rocket.numStages - 1; i++) {
@@ -237,7 +237,7 @@ export function RocketViewer() {
         );
       })}
 
-      {/* CG marker — yin-yang style circle (alternating quadrants) */}
+      {/* CG marker – yin-yang style circle (alternating quadrants) */}
       <motion.g
         initial={false}
         animate={{ x: centerX, y: cgY }}
@@ -259,7 +259,7 @@ export function RocketViewer() {
         </text>
       </motion.g>
 
-      {/* CP marker — small filled dot inside outlined circle */}
+      {/* CP marker – small filled dot inside outlined circle */}
       <motion.g
         initial={false}
         animate={{ x: centerX, y: cpY }}
@@ -278,7 +278,7 @@ export function RocketViewer() {
         </text>
       </motion.g>
 
-      {/* Direct-manipulation drag handles — hidden until the diagram is
+      {/* Direct-manipulation drag handles – hidden until the diagram is
           hovered, except while a handle is actively being dragged. */}
       <DragHandle
         cx={centerX}

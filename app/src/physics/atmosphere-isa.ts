@@ -1,4 +1,4 @@
-// International Standard Atmosphere — troposphere only (0 to 11 km).
+// International Standard Atmosphere – troposphere only (0 to 11 km).
 // Plenty for Estes-class flights, which rarely leave the boundary layer.
 //
 // Reference: ISA 1976. https://en.wikipedia.org/wiki/International_Standard_Atmosphere

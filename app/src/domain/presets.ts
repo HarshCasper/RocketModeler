@@ -14,7 +14,7 @@ export const PRESETS: RocketPreset[] = [
   {
     id: 'alpha-iii',
     name: 'Estes Alpha III',
-    blurb: 'The classic single-stage starter — a familiar profile from the orange-cap kit.',
+    blurb: 'The classic single-stage starter – a familiar profile from the orange-cap kit.',
     rocket: {
       schemaVersion: 1,
       numStages: 1,
@@ -37,7 +37,7 @@ export const PRESETS: RocketPreset[] = [
   {
     id: 'big-bertha',
     name: 'Estes Big Bertha',
-    blurb: 'The famously chunky 41 mm tube — soft launches and big parachute drops.',
+    blurb: 'The famously chunky 41 mm tube – soft launches and big parachute drops.',
     rocket: {
       schemaVersion: 1,
       numStages: 1,
@@ -60,7 +60,7 @@ export const PRESETS: RocketPreset[] = [
   {
     id: 'two-stage-explorer',
     name: 'Two-stage explorer',
-    blurb: 'Booster + sustainer — watch the staged ignition redraw stability mid-flight.',
+    blurb: 'Booster + sustainer – watch the staged ignition redraw stability mid-flight.',
     rocket: {
       schemaVersion: 1,
       numStages: 2,

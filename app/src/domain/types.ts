@@ -89,7 +89,7 @@ export interface FlightSample {
   onRod: boolean;
   cg: number; // cm from base of current active rocket
   cp: number; // cm from base of current active rocket
-  marginCal: number; // (cg - cp) / body diameter — current stability caliber
+  marginCal: number; // (cg - cp) / body diameter – current stability caliber
 }
 
 export interface StageMetrics {

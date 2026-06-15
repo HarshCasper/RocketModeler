@@ -31,10 +31,10 @@ export function FlightHUD({ sample, maxAlt }: FlightHUDProps) {
       <Cell label="Speed" value={`${num(sample?.speed ?? 0, 1)} m/s`} />
       <Cell label="Max alt" value={`${num(maxAlt, 1)} m`} accent />
       <Cell label="Accel" value={`${num(accelG, 1)} g`} />
-      <Cell label="Stage" value={sample ? `${sample.activeStage + 1}` : '—'} />
+      <Cell label="Stage" value={sample ? `${sample.activeStage + 1}` : '–'} />
       <Cell
         label="Margin"
-        value={sample ? `${num(sample.marginCal, 2)} cal` : '—'}
+        value={sample ? `${num(sample.marginCal, 2)} cal` : '–'}
         tone={marginTone}
       />
     </div>

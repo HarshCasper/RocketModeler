@@ -12,8 +12,17 @@ export default function App() {
   useUrlSync();
   const mode = useAppStore((s) => s.mode);
   const setMode = useAppStore((s) => s.setMode);
+  const dark = useAppStore((s) => s.dark);
+  const setDark = useAppStore((s) => s.setDark);
   const [copied, setCopied] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
+
+  // Apply the dark class on the root element so Tailwind dark: variants pick it up.
+  useEffect(() => {
+    const root = document.documentElement;
+    if (dark) root.classList.add('dark');
+    else root.classList.remove('dark');
+  }, [dark]);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -37,20 +46,20 @@ export default function App() {
   }, [setMode]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-paper text-ink">
-      <header className="flex items-center gap-4 px-6 py-3 border-b border-nasa/15 bg-white">
-        <h1 className="text-xl font-semibold tracking-tight text-nasa flex items-baseline">
+    <div className="min-h-screen flex flex-col bg-paper text-ink dark:bg-ink dark:text-paper transition-colors">
+      <header className="flex items-center gap-4 px-6 py-3 border-b border-nasa/15 bg-white dark:bg-ink dark:border-white/10">
+        <h1 className="text-xl font-semibold tracking-tight text-nasa dark:text-rocket-tube flex items-baseline">
           RocketModeler
           <button
             type="button"
             onClick={() => setAboutOpen(true)}
-            className="ml-2 text-xs font-normal text-ink/50 hover:text-nasa underline-offset-2 hover:underline"
+            className="ml-2 text-xs font-normal text-ink/50 dark:text-paper/50 hover:text-nasa dark:hover:text-rocket-tube underline-offset-2 hover:underline"
             title="About"
           >
-            v1.1 · about
+            about
           </button>
         </h1>
-        <nav className="ml-4 inline-flex rounded-full border border-nasa/20 p-1 bg-paper">
+        <nav className="ml-4 inline-flex rounded-full border border-nasa/20 dark:border-white/15 p-1 bg-paper dark:bg-ink/60">
           <button
             type="button"
             onClick={() => setMode('design')}
@@ -58,7 +67,7 @@ export default function App() {
               'px-4 py-1 rounded-full text-sm font-medium transition-colors ' +
               (mode === 'design'
                 ? 'bg-nasa text-white shadow-sm'
-                : 'text-nasa hover:bg-nasa/10')
+                : 'text-nasa dark:text-rocket-tube hover:bg-nasa/10 dark:hover:bg-rocket-tube/15')
             }
           >
             Design
@@ -70,13 +79,24 @@ export default function App() {
               'px-4 py-1 rounded-full text-sm font-medium transition-colors ' +
               (mode === 'flight'
                 ? 'bg-nasa text-white shadow-sm'
-                : 'text-nasa hover:bg-nasa/10')
+                : 'text-nasa dark:text-rocket-tube hover:bg-nasa/10 dark:hover:bg-rocket-tube/15')
             }
           >
             Launch ▸
           </button>
         </nav>
         <div className="ml-auto flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setDark(!dark)}
+            className="inline-flex items-center gap-1 text-xs border border-nasa/20 dark:border-white/15 rounded-full px-2.5 py-1 hover:bg-nasa/10 dark:hover:bg-rocket-tube/15 transition-colors"
+            title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+            aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+            aria-pressed={dark}
+          >
+            <span aria-hidden="true">{dark ? '☀' : '☾'}</span>
+            <span className="sr-only">{dark ? 'Dark mode on' : 'Dark mode off'}</span>
+          </button>
           <SoundToggle />
           <button
             type="button"
@@ -90,7 +110,7 @@ export default function App() {
                 pushToast('Could not access clipboard', 'error');
               }
             }}
-            className="text-xs text-nasa border border-nasa/20 rounded-full px-3 py-1 hover:bg-nasa/10 transition-colors"
+            className="text-xs text-nasa dark:text-rocket-tube border border-nasa/20 dark:border-white/15 rounded-full px-3 py-1 hover:bg-nasa/10 dark:hover:bg-rocket-tube/15 transition-colors"
           >
             {copied ? '✓ Link copied' : 'Copy share link'}
           </button>
@@ -123,8 +143,8 @@ function SoundToggle() {
     <button
       type="button"
       onClick={() => updateFlight((f) => ({ ...f, soundEnabled: !f.soundEnabled }))}
-      className="inline-flex items-center gap-1 text-xs border border-nasa/20 rounded-full px-2.5 py-1 hover:bg-nasa/10 transition-colors"
-      title={enabled ? 'Sound on — click to mute' : 'Sound off — click to enable'}
+      className="inline-flex items-center gap-1 text-xs border border-nasa/20 dark:border-white/15 rounded-full px-2.5 py-1 hover:bg-nasa/10 dark:hover:bg-rocket-tube/15 transition-colors"
+      title={enabled ? 'Sound on, click to mute' : 'Sound off, click to enable'}
       aria-label={enabled ? 'Mute sound' : 'Enable sound'}
       aria-pressed={enabled}
     >

@@ -4,10 +4,37 @@ import type { FlightConfig, Rocket } from '../domain/types';
 import { DEFAULT_FLIGHT_CONFIG, DEFAULT_ROCKET } from '../domain/defaults';
 
 const LS_KEY = 'rocketmodeler:lastSession';
+const PREFS_KEY = 'rocketmodeler:prefs';
 
 interface PersistedState {
   rocket: Rocket;
   flight: FlightConfig;
+}
+
+interface PrefsState {
+  dark: boolean;
+  showForces: boolean;
+}
+
+function loadPrefs(): PrefsState {
+  if (typeof window === 'undefined') return { dark: false, showForces: false };
+  try {
+    const raw = window.localStorage.getItem(PREFS_KEY);
+    if (!raw) return { dark: false, showForces: false };
+    const parsed = JSON.parse(raw) as Partial<PrefsState>;
+    return { dark: !!parsed.dark, showForces: !!parsed.showForces };
+  } catch {
+    return { dark: false, showForces: false };
+  }
+}
+
+function savePrefs(prefs: PrefsState) {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
+  } catch {
+    // ignore quota errors
+  }
 }
 
 function loadSession(): PersistedState | null {
@@ -35,18 +62,23 @@ function saveSession(state: PersistedState) {
 interface AppState {
   rocket: Rocket;
   flight: FlightConfig;
-  stagesShowing: 1 | 2 | 3; // CG/CP inspector — how many stages to include
+  stagesShowing: 1 | 2 | 3; // CG/CP inspector, how many stages to include
   mode: 'design' | 'flight';
+  dark: boolean;
+  showForces: boolean;
   setRocket: (next: Rocket) => void;
   updateRocket: (patch: (r: Rocket) => Rocket) => void;
   setFlight: (next: FlightConfig) => void;
   updateFlight: (patch: (f: FlightConfig) => FlightConfig) => void;
   setStagesShowing: (n: 1 | 2 | 3) => void;
   setMode: (m: 'design' | 'flight') => void;
+  setDark: (v: boolean) => void;
+  setShowForces: (v: boolean) => void;
   resetAll: () => void;
 }
 
 const initialPersist = loadSession();
+const initialPrefs = loadPrefs();
 
 export const useAppStore = create<AppState>()(
   subscribeWithSelector((set, get) => ({
@@ -54,6 +86,8 @@ export const useAppStore = create<AppState>()(
     flight: initialPersist?.flight ?? DEFAULT_FLIGHT_CONFIG,
     stagesShowing: 1,
     mode: 'design',
+    dark: initialPrefs.dark,
+    showForces: initialPrefs.showForces,
     setRocket: (next) =>
       set((s) => ({
         rocket: next,
@@ -73,6 +107,8 @@ export const useAppStore = create<AppState>()(
         stagesShowing: Math.min(n, s.rocket.numStages) as 1 | 2 | 3,
       })),
     setMode: (m) => set({ mode: m }),
+    setDark: (v) => set({ dark: v }),
+    setShowForces: (v) => set({ showForces: v }),
     resetAll: () =>
       set({
         rocket: DEFAULT_ROCKET,
@@ -91,5 +127,13 @@ useAppStore.subscribe(
   },
   {
     equalityFn: (a, b) => a.rocket === b.rocket && a.flight === b.flight,
+  },
+);
+
+useAppStore.subscribe(
+  (s) => ({ dark: s.dark, showForces: s.showForces }),
+  (prefs) => savePrefs(prefs),
+  {
+    equalityFn: (a, b) => a.dark === b.dark && a.showForces === b.showForces,
   },
 );

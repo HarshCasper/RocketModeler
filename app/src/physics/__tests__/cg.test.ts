@@ -16,7 +16,7 @@ describe('computeCg (default rocket)', () => {
       { ...DEFAULT_ROCKET, recoveryPayloadMass: DEFAULT_ROCKET.recoveryPayloadMass + 200 },
       1,
     ).cg;
-    // payload sits at top of body tube — higher CG = closer to nose
+    // payload sits at top of body tube – higher CG = closer to nose
     expect(heavier).toBeGreaterThan(baseline);
   });
 

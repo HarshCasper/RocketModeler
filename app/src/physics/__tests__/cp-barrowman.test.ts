@@ -19,7 +19,7 @@ describe('Barrowman CP', () => {
 
   it('default rocket has CP behind CG (stable design)', () => {
     const cp = computeCpForRocket(DEFAULT_ROCKET).cp;
-    // CP must be lower than CG for stability — and the default rocket is stable.
+    // CP must be lower than CG for stability – and the default rocket is stable.
     expect(cp).toBeLessThan(20);
     expect(cp).toBeGreaterThan(0);
   });
@@ -84,7 +84,7 @@ describe('Barrowman CP', () => {
       finCount: 4,
     });
     // Fat rocket has fewer (s/d)^2 but bigger K_fb, and on net for our
-    // values K_fb dominates only proportionally — easier to check K_fb stays > 1.
+    // values K_fb dominates only proportionally – easier to check K_fb stays > 1.
     expect(skinny.cnaFins).toBeGreaterThan(0);
     expect(fat.cnaFins).toBeGreaterThan(0);
   });

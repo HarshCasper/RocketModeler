@@ -1,4 +1,4 @@
-// High-level runner — used by tests and by the post-flight summary chart.
+// High-level runner – used by tests and by the post-flight summary chart.
 // Steps the integrator until the rocket lands or a step budget is reached.
 
 import type { FlightConfig, FlightSample, Rocket } from '../domain/types';

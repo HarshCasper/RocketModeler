@@ -41,7 +41,7 @@ export function EnginesPanel() {
             >
               {options.map((eng) => (
                 <option key={eng.id} value={eng.id}>
-                  {eng.name} — {eng.avThrust1}N peak, {eng.totalBurnTime}s burn
+                  {eng.name} – {eng.avThrust1}N peak, {eng.totalBurnTime}s burn
                 </option>
               ))}
               {options.length === 0 && (
@@ -74,8 +74,10 @@ export function EnginesPanel() {
       />
 
       <div className="space-y-1">
-        <label className="text-xs font-medium text-ink/70">Parachute diameter</label>
-        <div className="inline-flex rounded-full border border-nasa/20 p-0.5 bg-paper">
+        <label className="block text-xs font-medium text-ink/70 dark:text-paper/70">
+          Parachute diameter
+        </label>
+        <div className="inline-flex rounded-full border border-nasa/20 dark:border-white/15 p-0.5 bg-paper dark:bg-ink/40">
           {[0.3, 0.6, 0.9].map((d) => (
             <button
               key={d}
@@ -85,7 +87,7 @@ export function EnginesPanel() {
                 'px-3 py-0.5 rounded-full text-xs font-medium transition-colors ' +
                 (rocket.parachuteDiameter === d
                   ? 'bg-nasa text-white'
-                  : 'text-nasa hover:bg-nasa/10')
+                  : 'text-nasa dark:text-rocket-tube hover:bg-nasa/10 dark:hover:bg-rocket-tube/15')
               }
             >
               {Math.round(d * 100)} cm

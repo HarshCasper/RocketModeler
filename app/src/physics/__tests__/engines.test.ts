@@ -21,7 +21,7 @@ describe('engine catalog', () => {
 
   it('total impulse is positive and class ordering holds monotonically', () => {
     // The original applet's catalog values for thrust were higher than NAR
-    // certification numbers, so we don't bind to strict NAR brackets — but
+    // certification numbers, so we don't bind to strict NAR brackets – but
     // higher classes should still produce higher impulse on average.
     const order = ['1/2A', 'A', 'B', 'C', 'D', 'E', 'F'];
     const avgImpulse: Record<string, number> = {};

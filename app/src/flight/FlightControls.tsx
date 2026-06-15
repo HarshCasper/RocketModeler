@@ -2,6 +2,22 @@ import { useAppStore } from '../state/store';
 import { SliderField } from '../ui/SliderField';
 import type { RunState } from './useSimulation';
 
+function ForcesToggle() {
+  const showForces = useAppStore((s) => s.showForces);
+  const setShowForces = useAppStore((s) => s.setShowForces);
+  return (
+    <label className="flex items-center justify-between gap-2 text-xs cursor-pointer">
+      <span className="text-ink/70 dark:text-paper/70">Show force vectors during flight</span>
+      <input
+        type="checkbox"
+        checked={showForces}
+        onChange={(e) => setShowForces(e.target.checked)}
+        className="accent-nasa"
+      />
+    </label>
+  );
+}
+
 interface FlightControlsProps {
   runState: RunState;
   onStart: () => void;
@@ -89,11 +105,12 @@ export function FlightControls({
         label="Time scale"
         value={flight.timeScale}
         min={0.1}
-        max={4}
+        max={10}
         step={0.1}
         unit="×"
         onChange={(v) => updateFlight((f) => ({ ...f, timeScale: v }))}
       />
+      <ForcesToggle />
     </div>
   );
 }

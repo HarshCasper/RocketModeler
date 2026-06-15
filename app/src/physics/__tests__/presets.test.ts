@@ -33,7 +33,7 @@ describe('preset rockets', () => {
     const alpha = runFullFlight(PRESET_BY_ID['alpha-iii'].rocket, DEFAULT_FLIGHT_CONFIG);
     const bertha = runFullFlight(PRESET_BY_ID['big-bertha'].rocket, DEFAULT_FLIGHT_CONFIG);
     // The heavier, fatter Bertha on a C6-5 should still clear the lighter
-    // Alpha III's A8-3 apogee — bigger total impulse wins.
+    // Alpha III's A8-3 apogee – bigger total impulse wins.
     expect(apogee(bertha)).toBeGreaterThan(apogee(alpha));
   });
 

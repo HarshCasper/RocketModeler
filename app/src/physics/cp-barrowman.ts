@@ -38,7 +38,7 @@ export function noseConeCpCoeff(shape: NoseConeShape | undefined): number {
   return NOSE_CP_COEFF[shape ?? 'cone'];
 }
 
-// Typical subsonic drag coefficient by nose cone shape — used by the UI to
+// Typical subsonic drag coefficient by nose cone shape – used by the UI to
 // suggest a sensible baseline Cd when the user picks a shape.
 export const NOSE_TYPICAL_CD: Record<NoseConeShape, number> = {
   cone: 0.5,
@@ -52,12 +52,12 @@ export function computeCp(input: CpInputs): CpResult {
   const noseShape = input.noseShape ?? 'cone';
   const totalLen = bodyLength + noseLength;
 
-  // Nose cone — all axisymmetric pointed shapes have Cnα = 2. CP from nose
+  // Nose cone – all axisymmetric pointed shapes have Cnα = 2. CP from nose
   // tip depends on shape per published Barrowman coefficients.
   const cnaNose = 2;
   const xNose = NOSE_CP_COEFF[noseShape] * noseLength;
 
-  // Fins — triangular delta with apex at top: c_r = finLength, c_t = 0,
+  // Fins – triangular delta with apex at top: c_r = finLength, c_t = 0,
   // semi-span s = finWidth, sweep length m = finLength.
   const R = bodyDiameter / 2;
   const s = finWidth;
@@ -75,7 +75,7 @@ export function computeCp(input: CpInputs): CpResult {
   const arTerm = (4 * finCount * (s / bodyDiameter) ** 2) / (1 + Math.sqrt(1 + denomBase * denomBase));
   const cnaFins = Kfb * arTerm;
 
-  // Fin CP — for c_t = 0, XR collapses to c_r/2 measured from leading-edge
+  // Fin CP – for c_t = 0, XR collapses to c_r/2 measured from leading-edge
   // root. The leading edge root is at the top of the fin (apex up).
   const finXR = cr / 2; // since c_t = 0
   // Fin leading-edge root axial distance from nose tip:
