@@ -27,6 +27,7 @@ export interface SimulationHandle {
   pause: () => void;
   resume: () => void;
   reset: () => void;
+  skipToLanding: () => void;
 }
 
 export function useSimulation({ rocket, config }: UseSimulationArgs): SimulationHandle {
@@ -171,6 +172,26 @@ export function useSimulation({ rocket, config }: UseSimulationArgs): Simulation
     accumulatedRef.current = 0;
   }, [rocket, config, stop]);
 
+  const skipToLanding = useCallback(() => {
+    const sim = simRef.current;
+    if (!sim) return;
+    if (sim.state.phase === 'landed' || sim.state.phase === 'crashed') return;
+    stop();
+    stopThruster();
+    let safety = 6000;
+    let last: FlightSample | null = null;
+    while (safety-- > 0) {
+      last = stepSim(sim);
+      samplesRef.current.push(last);
+      if (last.altitude > maxAltRef.current) maxAltRef.current = last.altitude;
+      if (last.phase === 'landed' || last.phase === 'crashed') break;
+    }
+    if (last) setSample(last);
+    setMaxAlt(maxAltRef.current);
+    setSamplesSnapshot(samplesRef.current.slice());
+    setRunState('ended');
+  }, [stop]);
+
   useEffect(() => () => stop(), [stop]);
 
   return {
@@ -183,5 +204,6 @@ export function useSimulation({ rocket, config }: UseSimulationArgs): Simulation
     pause,
     resume,
     reset,
+    skipToLanding,
   };
 }

@@ -42,20 +42,6 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
 
         <div className="text-sm text-ink/75 dark:text-paper/70 space-y-2">
           <p>
-            <strong>Stack:</strong> Vite, React, TypeScript, Tailwind, Zustand,
-            pako for hash compression, Framer Motion for the soft transitions,
-            and the Web Audio API for the countdown beeps.
-          </p>
-          <p>
-            <strong>Physics:</strong> centre of gravity is the original
-            applet&apos;s mass-weighted calculation. Centre of pressure is
-            Barrowman with shape-aware nose terms. Atmosphere is the ISA
-            troposphere model. Flight integration is semi-Euler at 100
-            sub-steps per visible frame, with a launch-rod axis constraint
-            and an aero alignment term that produces gravity turn and
-            weathercocking from wind and stability margin.
-          </p>
-          <p>
             <strong>Source:</strong>{' '}
             <span className="font-mono text-xs">
               github.com/harshcasper/rocket-modeler

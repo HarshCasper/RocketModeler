@@ -166,6 +166,7 @@ export function FlightMode() {
         <FlightHUD sample={viewerSample} maxAlt={sim.maxAlt} />
         <FlightControls
           runState={sim.runState}
+          phase={sim.sample?.phase}
           onStart={() => {
             setSummaryOpen(false);
             stopReplay();
@@ -178,6 +179,7 @@ export function FlightMode() {
             stopReplay();
             sim.reset();
           }}
+          onSkipToLanding={sim.skipToLanding}
         />
       </aside>
     </div>

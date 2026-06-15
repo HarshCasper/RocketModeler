@@ -20,18 +20,22 @@ function ForcesToggle() {
 
 interface FlightControlsProps {
   runState: RunState;
+  phase?: string;
   onStart: () => void;
   onPause: () => void;
   onResume: () => void;
   onReset: () => void;
+  onSkipToLanding?: () => void;
 }
 
 export function FlightControls({
   runState,
+  phase,
   onStart,
   onPause,
   onResume,
   onReset,
+  onSkipToLanding,
 }: FlightControlsProps) {
   const flight = useAppStore((s) => s.flight);
   const updateFlight = useAppStore((s) => s.updateFlight);
@@ -39,6 +43,10 @@ export function FlightControls({
   const canLaunch = runState === 'idle' || runState === 'ended';
   const canPause = runState === 'running';
   const canResume = runState === 'paused';
+  const canSkip =
+    !!onSkipToLanding &&
+    (runState === 'running' || runState === 'paused') &&
+    (phase === 'descent' || phase === 'coast');
 
   return (
     <div className="space-y-4">
@@ -72,11 +80,20 @@ export function FlightControls({
         <button
           type="button"
           onClick={onReset}
-          className="px-3 py-2 rounded border border-ink/20 text-ink/70 font-medium text-sm hover:bg-ink/5"
+          className="px-3 py-2 rounded border border-ink/20 dark:border-white/15 text-ink/70 dark:text-paper/70 font-medium text-sm hover:bg-ink/5 dark:hover:bg-white/10"
         >
           ↺
         </button>
       </div>
+      {canSkip && (
+        <button
+          type="button"
+          onClick={onSkipToLanding}
+          className="w-full text-xs py-1.5 rounded border border-nasa/25 dark:border-rocket-tube/30 text-nasa dark:text-rocket-tube hover:bg-nasa/10 dark:hover:bg-rocket-tube/15 transition-colors"
+        >
+          ⏭ Skip to landing
+        </button>
+      )}
 
       <SliderField
         label="Launch angle"

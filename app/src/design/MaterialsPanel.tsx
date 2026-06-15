@@ -9,10 +9,10 @@ export function MaterialsPanel() {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-semibold text-nasa">Materials</h3>
+      <h3 className="text-sm font-semibold text-nasa dark:text-rocket-tube">Materials</h3>
 
       <div className="space-y-2">
-        <label className="text-xs font-medium text-ink/70">Nose cone</label>
+        <label className="block text-xs font-medium text-ink/70 dark:text-paper/70">Nose cone</label>
         <div className="flex flex-wrap gap-1.5">
           {NOSE_CONE_MATERIALS.map((id) => (
             <Chip
@@ -47,7 +47,7 @@ export function MaterialsPanel() {
       </div>
 
       <div className="space-y-2">
-        <label className="text-xs font-medium text-ink/70">Fins</label>
+        <label className="block text-xs font-medium text-ink/70 dark:text-paper/70">Fins</label>
         <div className="flex flex-wrap gap-1.5">
           {FIN_MATERIALS.map((id) => (
             <Chip
@@ -64,8 +64,8 @@ export function MaterialsPanel() {
           ))}
         </div>
         <div className="space-y-1">
-          <label className="text-xs text-ink/50">Thickness</label>
-          <div className="inline-flex rounded-full border border-nasa/20 p-0.5 bg-paper">
+          <label className="block text-xs text-ink/50 dark:text-paper/50">Thickness</label>
+          <div className="inline-flex rounded-full border border-nasa/20 dark:border-white/15 p-0.5 bg-paper dark:bg-ink/40">
             {([0.125, 0.25] as const).map((t) => (
               <button
                 key={t}
@@ -80,7 +80,7 @@ export function MaterialsPanel() {
                   'px-3 py-0.5 rounded-full text-xs font-medium transition-colors ' +
                   (rocket.fins.thicknessInches === t
                     ? 'bg-nasa text-white'
-                    : 'text-nasa hover:bg-nasa/10')
+                    : 'text-nasa dark:text-rocket-tube hover:bg-nasa/10 dark:hover:bg-rocket-tube/15')
                 }
               >
                 {t === 0.125 ? '1/8″' : '1/4″'}
@@ -118,7 +118,7 @@ function Chip({ active, label, onClick }: { active: boolean; label: string; onCl
         'px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors border ' +
         (active
           ? 'bg-nasa text-white border-nasa'
-          : 'text-ink/70 bg-paper border-nasa/15 hover:border-nasa/40')
+          : 'text-ink/70 dark:text-paper/80 bg-paper dark:bg-ink/40 border-nasa/15 dark:border-white/15 hover:border-nasa/40 dark:hover:border-rocket-tube/40')
       }
     >
       {label}

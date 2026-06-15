@@ -252,9 +252,13 @@ function draw(ctx: CanvasRenderingContext2D, d: DrawCtx) {
     ctx.stroke();
   }
 
-  // Rocket sprite at the computed screen position.
+  // Rocket sprite at the computed screen position. The sprite is anchored at
+  // the rocket's base, so a half-body offset lifts the centre up. Without
+  // this, altitude=0 puts the centre on the ground and the fins sink below
+  // it.
   const rocketScreenX = worldX(d.sample?.xDistance ?? 0);
-  const rocketScreenY = worldY(altitude);
+  const bodyHalfPx = Math.max(48, d.rocket.body.length * PX_PER_CM) / 2;
+  const rocketScreenY = worldY(altitude) - bodyHalfPx;
   drawRocket(ctx, rocketScreenX, rocketScreenY, d.rocket, d.launchAngle, d.sample);
 
   if (d.showForces && d.sample && d.sample.phase !== 'pad' && d.sample.phase !== 'landed') {
