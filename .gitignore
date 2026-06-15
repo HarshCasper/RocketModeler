@@ -6,3 +6,10 @@ dist/
 .env
 .env.local
 coverage/
+.playwright-mcp/
+*.tsbuildinfo
+*.png
+vite.config.js
+vite.config.d.ts
+HANDOFF.md
+SPEC.md
