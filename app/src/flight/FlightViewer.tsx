@@ -223,7 +223,7 @@ function draw(ctx: CanvasRenderingContext2D, d: DrawCtx) {
   if (groundOnScreen) drawGround(ctx, worldY(0), H, W, d.dark);
 
   // Launch rod.
-  drawRod(ctx, d.launchAngle, worldX(0), worldY(0));
+  drawRod(ctx, d.launchAngle, worldX(0), worldY(0), d.rocket);
 
   // Smoke plume.
   for (const p of d.smoke) {
@@ -366,21 +366,33 @@ function drawRod(
   launchAngle: number,
   padX: number,
   padY: number,
+  rocket: Rocket,
 ) {
-  const rodLengthPx = 64;
+  // Keep the rod outside the fin span so it reads as a separate object.
+  const halfBodyPx = (Math.max(10, rocket.body.diameter * PX_PER_CM)) / 2;
+  const finSpanPx = Math.max(8, rocket.fins.width * PX_PER_CM);
+  const standoff = halfBodyPx + finSpanPx + 14;
+  const rodLengthPx = 96;
   const a = (launchAngle * Math.PI) / 180;
-  const baseX = padX - 16;
+  const baseX = padX - standoff;
   const tipX = baseX + rodLengthPx * Math.cos(a);
   const tipY = padY - rodLengthPx * Math.sin(a);
-  ctx.strokeStyle = '#2a2a2a';
-  ctx.lineWidth = 2;
+  ctx.strokeStyle = '#5a5a5a';
+  ctx.lineWidth = 2.2;
   ctx.beginPath();
   ctx.moveTo(baseX, padY);
   ctx.lineTo(tipX, tipY);
   ctx.stroke();
-  // base block
+  // Tiny launcher mount at the base of the rod.
   ctx.fillStyle = '#3a3a3a';
-  ctx.fillRect(baseX - 8, padY - 4, 16, 6);
+  ctx.fillRect(baseX - 10, padY - 4, 20, 6);
+  // Subtle ignition wire to the rocket base for visual context.
+  ctx.strokeStyle = '#c0392b';
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.moveTo(baseX, padY + 2);
+  ctx.lineTo(padX - halfBodyPx, padY + 2);
+  ctx.stroke();
 }
 
 function drawCloudLayer(
